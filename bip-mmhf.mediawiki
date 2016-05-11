@@ -1,6 +1,6 @@
 <pre>
   BIP: ?
-  Title: 2015 Growth Hardfork
+  Title: 2017 Hardfork
   Author: Luke Dashjr <luke_bip-mmhf@dashjr.org>
   Status: Draft
   Type: Standards Track
@@ -13,66 +13,79 @@ Expand block size and mining nonce space, as well as add native merge-mining sup
 
 ==Specification==
 
-If 4324 of the previous 4463 blocks, as well as the current block have bit 16 of the version number set, the block format is to be changed for the current as well as all future blocks in the same chain, even if those blocks do not retain version bit 16 (which may be later reused with a new meaning/purpose).
-Miners should not produce blocks with version bit 16 until they reasonably believe all major merchants and payment processors, as well as a supermajority of other users, have upgraded to support this new block format.
+Each block includes three headers.
 
-The current block header (header 1) is modified such that the merkle root is replaced by a hash of a second header ("header 2").
+The primary header is hashed repeatedly to prove work, and has 56 bits of nonce space. The hash algorithm is SHA256d over the following format:
 
-The current generation transaction (now header 2) is redefined to the following format:
+* 3 bytes: 24-bit nonce 1
+* 1 byte: constant 0x60
+* 32 bytes: Previous block hash
+* 32 bytes: Hash of secondary header
+* 4 bytes: Timestamp
+* 4 bytes: 32-bit nonce 2
 
-* 4 bytes: constant 0x77777777 (formerly tx version)
-* 1 byte: constant 0x01 (tx_in count)
-* 36 bytes: constant generation "outpoint" (as current)
+The secondary header's hash is calculated as SHA256d over the following format:
+
+* 41 bytes: constant data:
+
+    77 77 77 77  01 00 00 00  00 00 00 00  00 00 00 00
+    00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00
+    00 00 00 00  00 ff ff ff  ff
+
 * 1 byte: length of coinbase
 * 2-100 bytes: coinbase; must be formatted as:
 * * serialised height
 * * unserialised merge mined merkle prefix tree root
-* * extra nonce 1 (variable length, within coinbase limits)
-* 4 bytes: extra nonce 2 (formerly sequence)
-* 1 byte: constant 0x01 (tx_out count)
-* 13 bytes: constant 0 (tx_out amount, sPK length, and lock_time)
+* * nonce 3 (variable length, within coinbase limits)
+* 4 bytes: 32-bit nonce 4
+* 14 byte: constant data:
+
+    01 00 00 00  00 00 00 00  00 00 00 00 00 00
 
 The merge mining tree should use the "merkle prefix trees" specification as per BIP X1 (FIXME).
-The key for Bitcoin in this tree is to be "bc", and its value is considered to be "header 3".
+The key for Bitcoin in this tree is to be "bc", and its value is the third header.
 
 Header 3 format:
+
 * 2 bytes: hardfork block version
-* 2 bytes: softfork block version
+* 4 bytes: softfork block version (as in BIP 9)
 * 8 bytes: tx data canonical size (in bytes)
 * 8 bytes: tx sigop count total
+* 8 bytes: combined tx cost
 * 4 bytes: block tx count
 * 32 bytes: transaction merkle root
 
-TODO: change tx merkle format?
+The transaction merkle root here uses BIP X1 trie with the transaction id as the key, and the data as the full data of the transaction, including witness data.
 
-The tx data size and count must be accurate, or the block is invalid.
-The data size must not exceed 2 000 000 (2 MB) nor the total sigop count exceed 20 000 unless revised in a future BIP, or the block is invalid.
-SigOps within new blocks are to be counted only in signature scriptures (no longer pubkey scripts) and their respective redeemed pubkey scripts (as applicable) using the counting rules from BIP 16.
+The tx data size, sigops, cost and tx count must be accurate, or the block is invalid.
+
+The cost must not exceed FIXME nor the total sigop count exceed FIXME, or the block is invalid.
+FIXME: SigOps within new blocks are to be counted only in signature scriptures (no longer pubkey scripts) and their respective redeemed pubkey scripts (as applicable) using the counting rules from BIP 16.
+
+The hardfork block version functions as in BIP 9, however due to the nature of hardforks:
+
+* Nodes MUST defer the "starttime" until the node has explicitly indicated consent of the entire network to the hardfork.
+* Mining nodes specifically MUST defer the "starttime" until they are confident the entire network has consented to the hardfork AND indicated network support in their node.
+* If an unrecognised hard fork bit reaches activation conditions on the longest chain, nodes must stop at the last block under the known rules until the node operator chooses to accept or reject the hardfork.
+* If an unconsented/rejected hard fork bit reaches activation, the node should switch to the alternative proof-of-work algorithm to move forward from the forking point.
+* A hardfork cannot be accepted by the node so long as it does not implement/recognise it. Until the software is upgraded, it can only remain in the "unrecognised" or "unconsented/rejected" state.
+* FIXME: If greater than X% of transacted bitcoins over the signalling period indicate rejection of the hardfork, it must not activate.
+* FIXME: how to deal with the original chain putting more work on a non-forking chain, after PoW has switched.
 
 ==Motivation==
 
 Bitcoin mining needs to modify hashed data in order to find valid blocks.
 32 bits of arbitrary data, the nonce, is available directly in the block header.
-When this space is exhausted, miners are forced to modify the transaction data, traditionally the generation transaction's dummy scriptSig (the coinbase)                to influence the merkle root in the block header.
+When this space is exhausted, miners are forced to modify the transaction data, traditionally the generation transaction's dummy scriptSig (the coinbase) to influence the merkle root in the block header.
 However, this process is complicated, and not suitable for outsourcing to hardware, which is rapidly reaching hashrates that cannot be kept up with by computers.
-
-Additionally, the current block size maximum is too small to be reasonably used for the next decade, even with technological improvements to reduce spam and load.
-It is not yet known how much the block size may need to increase, and there are legitimate concerns with potentially increasing it too rapidly.
-Therefore, a reasonable compromise is included in this BIP to change the maximum block size slightly once, giving some breathing room before a more permanent solution is found.
 
 ==Rationale==
 
-One solution to the nonce size limit is to expand the nonce space available in the block header, either by allowing it to be variably longer than its current fixed size of 80 bytes, or by repurposing unused sections as additional nonceo.
+One solution to the nonce size limit is to expand the nonce space available in the block header, either by allowing it to be variably longer than its current fixed size of 80 bytes, or by repurposing unused sections as additional nonce.
 To expand the block size, it is sufficient to merely tolerate more transactions.
 
 However, these methods of hardforking would leave old nodes not only broken, but susceptible to a security compromise as they will reject such new blocks, yet accept as valid a shorter chain satisfying the old rules.
-This is addressed by implementing this hardfork as merge mining within empty blocks satifying the old rules.
-By making header 2 the sole transaction under the old rules, its hash is always the only one in the header (without a variable-size merkle tree), and can be more easily and cleanly implemented in hardware should the extranonce be required.
-
-Header 2 replaces variant data (tx version, tx_out, lock_time) with constants such that they may be omitted entirely on the wire, and not stored on disk - essentially becoming mere hash padding for the proof-of-work algorithm.
-Additionally, since the change of block size may be contentious, this constant data enables the community to easily hardfork away from the new block format in the case of this BIP becoming Active without proper consensus.
-
-4324/4464 blocks of expressed support was chosen to give approximately 96% of the previous month of blocks.
+This is addressed by implementing this hardfork using hashes that old nodes will recognise as valid empty blocks.
 
 ==Backward Compatibility==
 
