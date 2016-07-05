@@ -13,18 +13,49 @@ Expand block size and mining nonce space, as well as add native merge-mining sup
 
 ==Specification==
 
-Each block includes three headers.
+=== Block header fields ===
 
-The primary header is hashed repeatedly to prove work, and has 56 bits of nonce space. The hash algorithm is SHA256d over the following format:
+Each block includes a number of header fields:
 
-* 3 bytes: 24-bit nonce 1
-* 1 byte: constant 0x60
-* 32 bytes: Previous block hash
-* 32 bytes: Hash of secondary header
-* 4 bytes: Timestamp
-* 4 bytes: 32-bit nonce 2
+* A total of up to 600 bits of nonce space:
+** 32-bit class 1 nonce which can be changed immediately before the final stage of the DMMS (PoW) calculation
+** 24-bit class 2 nonce
+** Variable-length (32-bit to 544-bit) class 3 nonce
+* Previous block's hash
+* Timestamp, truncated to 32-bit
+* Height
+* 8-bit merge-mining-hardfork deployment bitfield
+* 16-bit hardfork deployment bitfield
+* 32-bit softfork deployment bitfield (as in BIP 9)
 
-The secondary header's hash is calculated as SHA256d over the following format:
+In addition, the block includes a set of transactions.
+
+The transactions must update the UTXO state from the previous block.
+If they attempt to consume a serial that does not exist in the UTXO state (whether from the previous block, or added during processing of this block), the block is invalid.
+
+Witnesses for inputs consuming a valid UTXO must be checked against the pubkey script for that UTXO.
+If such a check fails for any input, the block is invalid.
+
+The total cost of transactions in a block must not exceed FIXME nor the total sigop count exceed FIXME, or the block is invalid.
+FIXME: SigOps within new blocks are to be counted only in witness scripts and the UTXO pubkey scripts they are checked against (no longer pubkey scripts of new UTXOs) using the counting rules from BIP 141.
+
+=== Dynamic membership multiparty signature DMMS) algorithm ===
+
+Hash TMR ("Transaction Merkle Root") is produced by...TODO
+
+Hash H-C ("Header C") is produced by performing SHA256d over the following data (FIXME: endian):
+
+* 2 bytes: hardfork deployment bitfield
+* 4 bytes: softfork deployment bitfield
+* 8 bytes: transaction data canonical size (in bytes)
+* 8 bytes: transaction cost total
+* 8 bytes: transaction sigop total
+* 4 bytes: transaction count
+* 32 bytes: Hash TMR
+
+Hash CMR ("Commitment Merkle Root") is produced by...TODO: BIP X1?
+
+Hash H-B ("Header B") is produced by performing SHA256d over the following data:
 
 * 41 bytes: constant data:
 
@@ -32,37 +63,32 @@ The secondary header's hash is calculated as SHA256d over the following format:
     00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00
     00 00 00 00  00 ff ff ff  ff
 
-* 1 byte: length of coinbase
-* 2-100 bytes: coinbase; must be formatted as:
-* * serialised height
-* * unserialised merge mined merkle prefix tree root
-* * nonce 3 (variable length, within coinbase limits)
-* 4 bytes: 32-bit nonce 4
-* 14 byte: constant data:
+* 1 byte: (length of following 6-104 bytes of data) minus 4
+* 6-104 bytes:
+* * serialised height (see BIP 34)
+* * Hash CMR
+* * Class 3 nonce
+* 14 bytes: constant data:
 
     01 00 00 00  00 00 00 00  00 00 00 00 00 00
 
-The merge mining tree should use the "merkle prefix trees" specification as per BIP X1 (FIXME).
-The key for Bitcoin in this tree is to be "bc", and its value is the third header.
+FIXME: Do we want to allow 0-value outputs? Necessary for 21inc compat; makes future OP_RETURN additions possible (but not an ideal location for added data)
 
-Header 3 format:
+Hash H-A ("Header A") is produced by performing SHA256d over the following data:
 
-* 2 bytes: hardfork block version
-* 4 bytes: softfork block version (as in BIP 9)
-* 8 bytes: tx data canonical size (in bytes)
-* 8 bytes: tx sigop count total
-* 8 bytes: combined tx cost
-* 4 bytes: block tx count
-* 32 bytes: transaction merkle root
+* 3 bytes: Class 2 nonce
+* 1 byte: constant 0x60
+* 32 bytes: Previous block's hash
+* 32 bytes: Hash H-B
+* 4 bytes: Timestamp
+* 4 bytes: Class 1 nonce
 
-The transaction merkle root here uses BIP X1 trie with the transaction id as the key, and the data as the full data of the transaction, including witness data.
+Hash H-A is then to be interpreted as a little-endian (FIXME: check) number, and compared to the current block target.
+If the hash is less than or equal to the target, the DMMS signature is valid.
 
-The tx data size, sigops, cost and tx count must be accurate, or the block is invalid.
+=== Hardfork deployment bitfields ===
 
-The cost must not exceed FIXME nor the total sigop count exceed FIXME, or the block is invalid.
-FIXME: SigOps within new blocks are to be counted only in signature scriptures (no longer pubkey scripts) and their respective redeemed pubkey scripts (as applicable) using the counting rules from BIP 16.
-
-The hardfork block version functions as in BIP 9, however due to the nature of hardforks:
+The hardfork deployment bitfields function as in BIP 9, however due to the nature of hardforks:
 
 * Nodes MUST defer the "starttime" until the node has explicitly indicated consent of the entire network to the hardfork.
 * Mining nodes specifically MUST defer the "starttime" until they are confident the entire network has consented to the hardfork AND indicated network support in their node.
@@ -78,6 +104,11 @@ Bitcoin mining needs to modify hashed data in order to find valid blocks.
 32 bits of arbitrary data, the nonce, is available directly in the block header.
 When this space is exhausted, miners are forced to modify the transaction data, traditionally the generation transaction's dummy scriptSig (the coinbase) to influence the merkle root in the block header.
 However, this process is complicated, and not suitable for outsourcing to hardware, which is rapidly reaching hashrates that cannot be kept up with by computers.
+By expanding the nonce space that can be searched in hardware, this problem is fixed.
+
+TODO: Block cost limit increase (or another BIP?)
+
+TODO: Merge mining
 
 ==Rationale==
 
@@ -90,7 +121,7 @@ This is addressed by implementing this hardfork using hashes that old nodes will
 ==Backward Compatibility==
 
 This hardfork will permanently disable all nodes, both full and light, which do not explicitly add support for it.
-However, their security will not be compromised due to the implementation.
+However, their security will not be compromised due to the implementation (TODO: elaborate here).
 To migrate, all nodes must choose to upgrade, and miners must express supermajority support.
 
 If miners attempt to enact this hardfork against user consent, it is trivial to override with a minimal hardfork.
