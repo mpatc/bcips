@@ -93,7 +93,27 @@ Hash H-C ("Header C") is produced by performing SHA256d over the following data 
 * 32 bytes: Hash TMR
 * 32 bytes: Hash WMR
 
-Hash CMR ("Commitment Merkle Root") is produced by performing the merkle tree algorithm with ... FIXME
+Hash CMR ("Commitment Merkle Root") MAY be produced by performing the merkle tree algorithm with hash H-C in a vector of up to 2^32 elements, but MUST ONLY be checked as a partial branch leading to hash H-C.
+Specifically, nodes MUST NOT concern or otherwise check anything in regard to other branches in the merkle tree.
+The position of hash H-C in the vector MUST be calculated as follows:
+
+    uint32_t lrot(uint32_t x, uint32_t n) {
+        return (x << n) | (x >> (32 - n));
+    }
+
+    // nonce is the first 4 bytes of the class 3 nonce, interpreted as a big endian integer
+    uint32_t vector_position_for_hc(uint32_t nonce, uint32_t vector_size) {
+        const uint32_t chain_id = 0x62697463;  // "bitc"
+        uint32_t a, b, c;
+        a = (0xb14c0121 ^ chain_id) - lrot(chain_id, 14);
+        b = (nonce ^ a) - rot(a, 11);
+        c = (chain_id ^ b) - rot(b, 25);
+        a = (a ^ c) - rot(c, 16);
+        b = (b ^ a) - rot(a, 4);
+        c = (c ^ b) - rot(b, 14);
+        a = (a ^ c) - rot(c, 24);
+        return a % vector_size;
+    }
 
 Hash H-B ("Header B") is produced by performing SHA256d over the following data:
 
@@ -103,8 +123,8 @@ Hash H-B ("Header B") is produced by performing SHA256d over the following data:
     00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00
     00 00 00 00  00 ff ff ff  ff
 
-* 1 byte: (length of following 5-103 bytes of data) minus 3
-* 5-103 bytes:
+* 1 byte: (length of following 40-103 bytes of data) minus 3
+* 40-103 bytes:
 * * serialised height (see BIP 34)
 * * Hash CMR
 * * Class 3 nonce
