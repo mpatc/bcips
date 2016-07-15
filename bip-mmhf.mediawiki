@@ -50,6 +50,7 @@ So long as the vector is more than one element, compress each set of two element
 * 216 bits: leading 216 bits of the second element
 * 1 bit: element type
 * 1 bit: plurality (usually 1; see below)
+* 6 bits: always zero
 
 When the vector has an odd number of elements, the final element should be compressed with a SHA256d hash of:
 
@@ -57,8 +58,21 @@ When the vector has an odd number of elements, the final element should be compr
 * 216 bits: all zero
 * 1 bit: element type
 * 1 bit: plurality (0 in this case)
+* 6 bits: always zero
 
 For the first iteration of the compression loop (that is, when the elements being compressed are the object hashes themselves), the element type should be 1; for subsequent iterations, it must always be 0.
+
+Finally, to create the final merkle tree root, one last SHA256d hash is performed of:
+
+* 152 bits: all zero
+* 64 bits: total number of elements in vector, encoded as big endian
+* 216 bits: complete remaining element
+* 1 bit: element type (iff the vector was 1 item long, this will be 1)
+* 1 bit: always zero
+* 1 bit: always 1
+* 5 bits: always zero
+
+By committing to the total number of elements in the merkle root, it avoids unbalanced merkle trees from being used to attack systems checking only part of the tree.
 
 === Dynamic membership multiparty signature DMMS) algorithm ===
 
