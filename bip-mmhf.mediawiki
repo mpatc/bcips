@@ -84,14 +84,12 @@ Hash WMR ("Witness Merkle Root") is produced by performing the merkle tree algor
 
 Hash H-C ("Header C") is produced by performing SHA256d over the following data (FIXME: endian):
 
-TODO: Order fields by what might make sense to midstate-compress out?
-
-* 2 bytes: hardfork deployment bitfield
-* 4 bytes: softfork deployment bitfield
 * 8 bytes: transaction data canonical size (in bytes)
 * 8 bytes: transaction cost total
 * 8 bytes: transaction sigop total
 * 4 bytes: transaction count
+* 2 bytes: hardfork deployment bitfield
+* 4 bytes: softfork deployment bitfield
 * 32 bytes: Hash TMR
 * 32 bytes: Hash WMR
 
