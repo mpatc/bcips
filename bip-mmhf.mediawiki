@@ -39,11 +39,36 @@ If such a check fails for any input, the block is invalid.
 The total cost of transactions in a block must not exceed FIXME nor the total sigop count exceed FIXME, or the block is invalid.
 FIXME: SigOps within new blocks are to be counted only in witness scripts and the UTXO pubkey scripts they are checked against (no longer pubkey scripts of new UTXOs) using the counting rules from BIP 141.
 
+=== Merkle tree algorithm ===
+
+For each object, compute a hash which represents it in the merkle tree (eg, txid or hash of the full transaction).
+Arrange these hashes into a vector.
+
+So long as the vector is more than one element, compress each set of two elements by replacing them with a SHA256d hash of:
+
+* 216 bits: leading 216 bits of the first element
+* 216 bits: leading 216 bits of the second element
+* 1 bit: element type
+* 1 bit: plurality (usually 1; see below)
+
+When the vector has an odd number of elements, the final element should be compressed with a SHA256d hash of:
+
+* 216 bits: leading 216 bits of the only remaining element
+* 216 bits: all zero
+* 1 bit: element type
+* 1 bit: plurality (0 in this case)
+
+For the first iteration of the compression loop (that is, when the elements being compressed are the object hashes themselves), the element type should be 1; for subsequent iterations, it must always be 0.
+
 === Dynamic membership multiparty signature DMMS) algorithm ===
 
-Hash TMR ("Transaction Merkle Root") is produced by...TODO
+Hash TMR ("Transaction Merkle Root") is produced by performing the merkle tree algorithm with the ids of all transactions to be included in the block.
+
+Hash WMR ("Witness Merkle Root") is produced by performing the merkle tree algorithm with the full hash (including witness data) of all transactions to be included in the block.
 
 Hash H-C ("Header C") is produced by performing SHA256d over the following data (FIXME: endian):
+
+TODO: Order fields by what might make sense to midstate-compress out?
 
 * 2 bytes: hardfork deployment bitfield
 * 4 bytes: softfork deployment bitfield
@@ -52,8 +77,9 @@ Hash H-C ("Header C") is produced by performing SHA256d over the following data 
 * 8 bytes: transaction sigop total
 * 4 bytes: transaction count
 * 32 bytes: Hash TMR
+* 32 bytes: Hash WMR
 
-Hash CMR ("Commitment Merkle Root") is produced by...TODO: BIP X1?
+Hash CMR ("Commitment Merkle Root") is produced by performing the merkle tree algorithm with ... FIXME
 
 Hash H-B ("Header B") is produced by performing SHA256d over the following data:
 
