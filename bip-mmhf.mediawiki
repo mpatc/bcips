@@ -125,9 +125,9 @@ Hash H-B ("Header B") is produced by performing SHA256d over the following data:
 
 * 1 byte: (length of following 40-103 bytes of data) minus 3
 * 40-103 bytes:
-* * serialised height (see BIP 34)
-* * Hash CMR
-* * Class 3 nonce
+** serialised height (see BIP 34)
+** Hash CMR
+** Class 3 nonce
 * 1 byte: length of preceding data (for midstate compression)
 * 14 bytes: constant data:
 
