@@ -66,9 +66,9 @@ For the first iteration of the compression loop (that is, when the elements bein
 
 Finally, to create the final merkle tree root, one last SHA256d hash is performed of:
 
-* 152 bits: all zero
+* 256 bits: complete remaining element
 * 64 bits: total number of elements in vector, encoded as big endian
-* 216 bits: complete remaining element
+* 112 bits: all zero
 * 1 bit: element type (iff the vector was 1 item long, this will be 1)
 * 1 bit: plurality (always 0 here)
 * 1 bit: merkle root (always 1 here)
