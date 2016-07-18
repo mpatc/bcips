@@ -142,6 +142,7 @@ Hash H-A ("Header A") is produced by performing SHA256d over the following data:
 * 32 bytes: Previous block's hash
 * 32 bytes: Hash H-B
 * 4 bytes: Timestamp
+* 4 bytes: current block target (encoded as Bitcoin's traditional "bits")
 * 4 bytes: Class 1 nonce
 
 Hash H-A is then to be interpreted as a little-endian (FIXME: check) number, and compared to the current block target.
