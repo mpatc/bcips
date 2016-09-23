@@ -1,0 +1,59 @@
+<pre>
+  BIP: ?
+  Title: OP_CHECKBLOCKATHEIGHT
+  Author: Author: Luke Dashjr <luke+bip@dashjr.org>
+  Status: Draft
+  Type: Standards Track
+  Created: 2016-09-23
+</pre>
+
+==Abstract==
+
+This BIP describes a new opcode (<code>OP_CHECKBLOCKATHEIGHT</code>) for the Bitcoin scripting system to address reissuing bitcoin transactions when the coins they spend have been conflicted/double-spent.
+
+==Motivation==
+
+In some circumstances, users may wish to spend received bitcoins before they have confirmed on the blockchain (Tx B1).
+However, if the transaction sending them those bitcoins (Tx A1) is double-spent, the wallet must re-issue their own transaction spending them (Tx B2).
+So long as the double-spend of the incoming transaction (Tx A2) also pays the wallet, this can be managed by simply updating the outgoing transaction with the new outpoint and resigning.
+However, if the double-spend does not pay the wallet, the situation is presently irrecoverable:
+it must spend different, non-conflicting TXOs in Tx B2, which allows an attacker to then reorganise the chain (reversing the incoming transaction's double-spend) and confirm both of his transactions Tx B1 and Tx B2.
+
+By adding OP_CHECKBLOCKATHEIGHT, the wallet can issue Tx B2 with a condition that the block confirming Tx A2 is in the history, thus eliminating this risk.
+
+==Specification==
+
+OP_NOP5 (0xb4) is redefined to be OP_CHECKBLOCKATHEIGHT.
+
+When this opcode is encountered:
+
+* If the stack has fewer than two elements, the script fails.
+* If the top stack item cannot be interpreted as a minimal-encoding signed 32-bit integer, the script fails.
+* The top stack item is interpreted as a block height (ParamHeight).
+* If the blockchain does not have ParamHeight blocks, the script temporarily fails (this failure must not be cached across blocks).
+* If the second-to-top stack item is longer than 28 bytes of data, or has leading zeros, the script fails.
+* The second-to-top is interpreted as a block hash, and padded to 32 bytes with zeros (ParamBlockHash).
+* If the block at height ParamHeight in the blockchain is not hashed to ParamBlockHash, the script fails.
+
+==Deployment==
+
+This BIP will be deployed by "version bits" [https://github.com/bitcoin/bips/blob/master/bip-0009.mediawiki BIP9] using the name "cbah" and using bit 2.
+
+For Bitcoin mainnet, the BIP9 starttime is midnight TBD UTC (Epoch timestamp TBD) and BIP9 timeout is midnight TBD UTC (Epoch timestamp TBD).
+
+For Bitcoin testnet, the BIP9 starttime is midnight TBD UTC (Epoch timestamp TBD) and BIP9 timeout is midnight TBD UTC (Epoch timestamp TBD).
+
+==Backwards Compatibility==
+
+OP_NOP5 ought to be forbidden by policy by all miners for future extensions such as this, so old miners will under no circumstances produce blocks which would now be considered invalid under the new rules.
+However, miners must still upgrade to avoid accepting and building on top of such a possible invalid block as part of an attack.
+
+Old nodes will likely also not relay transactions using this opcode for the same extensibility reasons, but this is not important since the rule cannot be verified deterministically outside the context of a block.
+
+==Implementation==
+
+TODO
+
+==Copyright==
+
+This BIP is dual-licensed under the Open Publication License and BSD 2-clause license.
