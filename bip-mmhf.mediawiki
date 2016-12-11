@@ -42,37 +42,72 @@ FIXME: SigOps within new blocks are to be counted only in witness scripts and th
 === Merkle tree algorithm ===
 
 For each object, compute a hash which represents it in the merkle tree (eg, txid or hash of the full transaction).
-Arrange these hashes into a vector.
 
-So long as the vector is more than one element, compress each set of two elements by replacing them with a SHA256d hash of:
+The transactions are hashed using a Merkle sum-tree.  For the sum-tree, each hash consists of 5 fields.
 
-* 216 bits: leading 216 bits of the first element
-* 216 bits: leading 216 bits of the second element
-* 1 bit: element type
-* 1 bit: plurality (usually 1; see below)
-* 1 bit: merkle root (always 0 here)
-* 5 bits: always zero
+* 32 bytes: hash : The SHA256d of the hashed data
+* 8 bytes: fees : Total fees
+* 4 bytes: sigops : Total sigops
+* 8 bytes: size : Total size
+* 8 bytes: cost : Total cost
 
-When the vector has an odd number of elements, the final element should be compressed with a SHA256d hash of:
+For the flags byte, there are 3 bits defined.
+    
+    FLAG_LEAF = 0x80
+    FLAG_PLURAL = 0x40
+    FLAG_MERKLE_ROOT = 0x20
+    
+The remaining bits are reserved and should be set to zero.
 
-* 216 bits: leading 216 bits of the only remaining element
-* 216 bits: all zero
-* 1 bit: element type
-* 1 bit: plurality (0 in this case)
-* 1 bit: merkle root (always 0 here)
-* 5 bits: always zero
+The FLAG_LEAF bit should be set for the lowest level of the tree only.
 
-For the first iteration of the compression loop (that is, when the elements being compressed are the object hashes themselves), the element type should be 1; for subsequent iterations, it must always be 0.
+The FLAG_PLURAL bit should be set when compressing two hashes into a single hash.
 
-Finally, to create the final merkle tree root, one last SHA256d hash is performed of:
+The FLAG_MERKLE_ROOT bit should be set for the final hashing step to generate the merkle root.
 
-* 256 bits: complete remaining element
-* 64 bits: total number of elements in vector, encoded as big endian
-* 112 bits: all zero
-* 1 bit: element type (iff the vector was 1 item long, this will be 1)
-* 1 bit: plurality (always 0 here)
-* 1 bit: merkle root (always 1 here)
-* 5 bits: always zero
+Arrange the hashes into a vector.
+
+For each pair of hashes, (left, right), in the vector, compress them by replacing them with:
+    
+    flags = FLAG_PLURAL (or FLAG_PLURAL | FLAG_LEAF)
+    
+    compressed.hash = SHA256d(left.hash | left.fees | left.sigops | left.size | left.cost | right.hash | right.fees | right.sigops | right.size | right.cost | flags)
+    compressed.fees = left.fees + right.fees
+    compressed.sigops = left.sigops + right.sigops
+    compressed.size = left.size + right.size
+    compressed.cost = left.cost + right.cost
+    
+If the last hash is unmatched due to an odd number elements, compress it by replacing it with:
+    
+    flags = 0 (or FLAG_LEAF)
+    
+    compressed.hash = SHA256d(left.hash | left.fees | left.sigops | left.size | left.cost | 256 zeros | 64 zeros | 32 zeros | 64 zeros | 64 zeros | flags)
+    compressed.fees = left.fees
+    compressed.sigops = left.sigops
+    compressed.size = left.size
+    compressed.cost = left.cost
+    
+Finally, to create the final merkle tree root, the root hash is compressed:
+
+* 8 bytes: element_count : Total number of leafs in the tree
+    
+    flags = FLAG_MERKLE (or FLAG_MERKLE | FLAG_LEAF)
+    
+    final_root_hash = SHA256d(root.hash | root.fees | root.sigops | root.size | root.cost | element_count | 192 zeros | 64 zeros | 32 zeros | 64 zeros | 64 zeros | flags)
+    
+For the witness tree, the sum portions are not included.  The flags field is the same and the compression formula is simplied.
+
+For compressing two hashes, compress with this formaula:
+
+* compressed.hash = SHA256d(Leading 27 bytes of left.hash | Leading 27 bytes of right.hash | flags)
+
+For handling a single hash, compress with this formula:
+
+* compressed.hash = SHA256d(Leading 27 bytes of left.hash | 27 bytes of zeros | flags)
+
+For the final hash step, compress with this formaula:
+
+* final_root_hash = SHA256d(Leading 27 bytes of root.hash | element_count | 19 bytes of zeros | flags)
 
 By committing to the total number of elements in the merkle root, it avoids unbalanced merkle trees from being used to attack systems checking only part of the tree.
 
