@@ -41,16 +41,20 @@ FIXME: SigOps within new blocks are to be counted only in witness scripts and th
 
 === Merkle tree algorithm ===
 
-For each object, compute a hash which represents it in the merkle tree (eg, txid or hash of the full transaction).
+For each object, compute a digest which represents it in the merkle tree.  Each digest consists of a hash and a number of sum fields.
 
-The transactions are hashed using a Merkle sum-tree.  For the sum-tree, each hash consists of 5 fields.
-
-* 32 bytes: hash : The SHA256d of the hashed data
-* 8 bytes: fees : Total fees
-* 4 bytes: sigops : Total sigops
-* 8 bytes: size : Total size
-* 8 bytes: cost : Total cost
-
+The digests for the transaction merkle tree consist of three fields.
+    
+    uint256 hash;  // a SHA256d hash
+    uint64 fees;   // the total fees paid by descendents of this node
+    uint64 size;   // the total size of all descendents of this node
+    
+The digests for the witness merkle tree consist of three fields.
+    
+    uint256 hash;  // a SHA256d hash
+    uint32 sigops; // the total number of sigops in descendents of this node
+    uint64 size;   // the total size of all descendents of this node
+    
 For the flags byte, there are 3 bits defined.
     
     FLAG_LEAF = 0x80
@@ -65,27 +69,37 @@ The FLAG_PLURAL bit should be set when compressing two hashes into a single hash
 
 The FLAG_MERKLE_ROOT bit should be set for the final hashing step to generate the merkle root.
 
-Arrange the hashes into a vector.
+Generate the digest for each of the transactions or witness data.
 
-For each pair of hashes, (left, right), in the vector, compress them by replacing them with:
+When generating the transaction tree, generate the leaf digests as follows.
     
-    flags = FLAG_PLURAL (or FLAG_PLURAL | FLAG_LEAF)
+    uint256 hash = txid
+    unit64 fees = sum(inputs) - sum(outputs)
+    uint64 size = size(tx serialization without witness data)
     
-    compressed.hash = SHA256d(left.hash | left.fees | left.sigops | left.size | left.cost | right.hash | right.fees | right.sigops | right.size | right.cost | flags)
+When generating the witness tree, generate the leaf digests as follows.
+
+    uint256 hash = txid
+    uint32 sigops = sigop count for transaction
+    uint64 size = size(tx serialization with witness data)
+
+For each pair of digests, (left, right), in the vector, compress them by replacing them with:
+    
+    flags = FLAG_PLURAL (or FLAG_PLURAL | FLAG_LEAF for the first pass)
+    
+    compressed.hash = SHA256d(left.hash | left.fees | left.size | right.hash | right.fees | right.size | flags)
     compressed.fees = left.fees + right.fees
-    compressed.sigops = left.sigops + right.sigops
     compressed.size = left.size + right.size
-    compressed.cost = left.cost + right.cost
     
 If the last hash is unmatched due to an odd number elements, compress it by replacing it with:
     
-    flags = 0 (or FLAG_LEAF)
+    flags = 0 (or FLAG_LEAF for the first pass)
     
-    compressed.hash = SHA256d(left.hash | left.fees | left.sigops | left.size | left.cost | 256 zeros | 64 zeros | 32 zeros | 64 zeros | 64 zeros | flags)
+    compressed.hash = SHA256d(left.hash | left.fees | left.size | 256 zeros | 64 zeros | 64 zeros | flags)
     compressed.fees = left.fees
-    compressed.sigops = left.sigops
     compressed.size = left.size
-    compressed.cost = left.cost
+
+Apply the compression steps until the number of digests has been reduced to a single digest.
     
 Finally, to create the final merkle tree root, the root hash is compressed:
 
@@ -93,23 +107,11 @@ Finally, to create the final merkle tree root, the root hash is compressed:
     
     flags = FLAG_MERKLE (or FLAG_MERKLE | FLAG_LEAF)
     
-    final_root_hash = SHA256d(root.hash | root.fees | root.sigops | root.size | root.cost | element_count | 192 zeros | 64 zeros | 32 zeros | 64 zeros | 64 zeros | flags)
+    final_root_hash = SHA256d(root.hash | root.fees | root.size | element_count | 192 zeros | 64 zeros | 64 zeros | flags)
     
 For the witness tree, the sum portions are not included.  The flags field is the same and the compression formula is simplied.
 
-For compressing two hashes, compress with this formaula:
-
-* compressed.hash = SHA256d(Leading 27 bytes of left.hash | Leading 27 bytes of right.hash | flags)
-
-For handling a single hash, compress with this formula:
-
-* compressed.hash = SHA256d(Leading 27 bytes of left.hash | 27 bytes of zeros | flags)
-
-For the final hash step, compress with this formaula:
-
-* final_root_hash = SHA256d(Leading 27 bytes of root.hash | element_count | 19 bytes of zeros | flags)
-
-By committing to the total number of elements in the merkle root, it avoids unbalanced merkle trees from being used to attack systems checking only part of the tree.
+To create the witness tree, the fees field should be replaced with the sigops field.
 
 === Dynamic membership multiparty signature DMMS) algorithm ===
 
