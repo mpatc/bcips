@@ -1,0 +1,78 @@
+<pre>
+  BIP: ?
+  Layer: Consensus (soft fork)
+  Title: Safe block size limit
+  Author: Luke Dashjr <luke+bip@dashjr.org>
+  Comments-Summary: No comments yet.
+  Comments-URI: FIXME
+  Status: Draft
+  Type: Standards Track
+  Created: 2017-01-19
+  License: BSD-2-Clause
+</pre>
+
+==Abstract==
+
+The block size limit is reduced to a safe value, and gradually increased over time, eventually expanding beyond the current limits.
+
+==Copyright==
+
+This BIP is licensed under the BSD 2-clause license.
+
+==Specification==
+
+Upon activation, the block size limitation is replaced by the function below, applied to the median of the timestamps of the previous 11 blocks, or in code terms: the block size limit for pindexBlock is GetMaxBlockSize(pindexBlock->pprev->GetMedianTimePast()).
+
+It implements a series of block size steps, one every ~97 days, starting at 300 kB in January 2017 and ending at just under 31 MB in July 2063, with each step increasing the maximum block size by 4.4%, allowing an overall growth of 17.7% per year.
+
+<pre>
+uint32_t GetMaxBlockSize(int64_t nMedianTimePast) {
+    // In case we activate early on regtest.
+    if (nMedianTimePast < 1483246800) {
+        return 300000;
+    }
+    // The first step is on January 1st 2017.
+    // After that, one step happens every 2^23 seconds.
+    int64_t step = (nMedianTimePast - 1483246800) >> 23;
+    // Don't do more than 107 steps, to stay under 32 MB.
+    step = std::min<int64_t>(step, 107);
+    // Every step is a 2^(1/16) factor.
+    static const uint32_t bases[16] = {
+        // bases[i] == round(300000 * pow(2.0, i / 16.0))
+        300000, 313282, 327152, 341637,
+        356762, 372557, 389052, 406277,
+        424264, 443048, 462663, 483147,
+        504538, 526876, 550202, 574562
+    };
+    return bases[step & 15] << (step / 16);
+}
+</pre>
+
+FIXME: Block weight limit
+
+===Deployment===
+
+This BIP will be deployed by "version bits" BIP9 with the name TBD and using bit TBD.
+
+For Bitcoin mainnet, the BIP9 starttime will be TBD (Epoch timestamp TBD) and BIP9 timeout will be TBD (Epoch timestamp TBD).
+
+For Bitcoin testnet, the BIP9 starttime will be TBD (Epoch timestamp TBD) and BIP9 timeout will be TBD (Epoch timestamp TBD).
+
+==Motivation==
+
+FIXME
+
+==Rationale==
+
+FIXME
+
+==Backwards compatibility==
+
+With this algorithm, the block size will exceed the current 1 MB limit during 2024 June.
+Provided BIP-FIXME:blksize is accepted before 2017 June, this remains effectively a softfork for such updated nodes.
+Otherwise, it will be a hardfork for nodes not implementing BIP-FIXME:blksize.
+Either way, several years is sufficient time for all nodes to update so long as this proposal's extension beyond 1 MB sizes has consensus by then.
+
+==Reference implementation==
+
+FIXME
