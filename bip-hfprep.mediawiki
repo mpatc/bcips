@@ -1,0 +1,71 @@
+<pre>
+  BIP: ?
+  Layer: Consensus (hard fork)
+  Title: Preparation for block size limit changes
+  Author: Luke Dashjr <luke+bip@dashjr.org>
+  Comments-Summary: No comments yet.
+  Comments-URI: FIXME
+  Status: Draft
+  Type: Standards Track
+  Created: 2017-01-19
+  License: BSD-2-Clause
+</pre>
+
+==Abstract==
+
+Full nodes are to be designed such as to relax a subset of their rules some time after release, so as to be forward compatible with future protocol changes.
+
+==Copyright==
+
+This BIP is licensed under the BSD 2-clause license.
+
+==Specification==
+
+Seven years after the release date of each new full node implementation, the enforced consensus rules are to be changed as follows:
+
+* The block size limit shall be lifted to at least 32000000 bytes.
+* The block weight limit, if any, shall be removed entirely.
+* The sigop limit, if any, shall be removed entirely.
+* The max script element size shall be removed entirely.
+* If segwit is active, witness data shall be passively ignored for all inputs, rather than rejected on ones which do not meet the segwit template criteria.
+* No scripts shall be executed to determine transaction validity; they shall all be presumed to execute successfully.
+* The check that total output value does not exceed total input value shall be skipped, and blocks shall be accepted even if they appear to create new value out of thin air.
+
+For the avoidance of doubt, node policy rules that do not affect the validity or invalidity of accepted blocks are not required to be modified.
+
+Node software should allow the user to override this relaxation (and enforce the full rules) in some unspecified manner.
+
+All future BIPs introducing new rules should explicitly define a "rule relaxation behaviour" along these lines.
+
+==Motivation==
+
+Currently any relaxation or similar modification of the protocol rules requires a hardfork, since all old nodes will reject such blocks as invalid.
+By prematurely designing node software to relax their rules in the future, it is possible for future proposals to instead set a date at least that far in the future to activate, to effectively transform these kind of changes from a hardfork to a softfork.
+
+==Rationale==
+
+Why is a block size limit enforced at all, after the rules are relaxed?
+
+* Software must be technically capable of accepting blocks, and as such some limit is needed. 32 MB is believed to be a reasonably safe limit for all current implementations (but this should be tested).
+
+Why is it safe to remove the max script element size?
+
+* Since scripts are not being validated when this rule relaxation activates, the script size no longer matters.
+
+Aren't these rules relaxed too much?
+
+* Nodes should be kept updated, which will extend the relaxation date further into the future. Any protocol change making use of this relaxation mode should retain any rules it does not intend to modify.
+
+Why should the value comparison check be relaxed? Won't this allow miners to print bitcoins?
+
+* Nodes should be kept updates, so this relaxation is only for forward compatibility with future protocol changes. It should never become the network rules on its own. The value comparison is relaxed so that features such as "confidential transactions" which hide values might be implemented with a new check, not so that the actual value can be created out of nothing. It could also be used to simplify some sidechain or extension block models.
+
+==Backwards compatibility==
+
+If node software is not updated, this change will break from the consensus of old nodes after seven years of the final software release.
+However, provided regular updates are made to a supermajority of the economy, this should have no effect on its own.
+Future protocol changes taking advantage of the changes proposed herein may break consensus with old nodes prior to this change no sooner than seven years from the acceptance of those BIPs, but this duration should be safe so long as such changes are accepted by consensus of the Bitcoin economy and users.
+
+==Reference implementation==
+
+FIXME
