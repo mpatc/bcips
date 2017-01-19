@@ -58,6 +58,10 @@ For Bitcoin mainnet, the BIP9 starttime will be TBD (Epoch timestamp TBD) and BI
 
 For Bitcoin testnet, the BIP9 starttime will be TBD (Epoch timestamp TBD) and BIP9 timeout will be TBD (Epoch timestamp TBD).
 
+As a safety mechanism, after the first four steps conclude (that is, on 2018 January 24), this BIP will be cancelled and the block size limit immediately returned to 1000000 bytes, unless it is renewed via a second BIP9 deployment.
+Renewal deployment is to occur using the same name, bit, and starttime; but with a timeout 6 months later.
+If the initial activation is not until after the first four steps, no renewal is necessary.
+
 ==Motivation==
 
 Many people want to see Bitcoin scale over time, allowing an increasing number of transactions on the block chain. It would come at an increased cost for the ecosystem (bandwidth, processing, and storage for relay nodes, as well as an impact on propagation speed of blocks on the network), but technology also improves over time. When all technologies depended on have improved as well as their availability on the market, there is no reason why Bitcoin's fundamental transaction rate cannot improve proportionally.
@@ -93,6 +97,7 @@ Why is median time past metric used rather than block time?
 What if the initial block size limit drop is too great?
 
 * Miners should be advised to soft-limit their blocks down to 300 kB, perhaps gradually, before this softfork is activated. This will allow the market time to adapt, and make it possible to back out of this softfork should serious problems arise.
+* This BIP requires a renewal within or after the first four steps to continue on course. If after activation, the reduced block size limit is found to be problematic, the network can opt not to renew it, or to make modifications before renewal.
 
 ==Backwards compatibility==
 
