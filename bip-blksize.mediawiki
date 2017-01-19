@@ -60,17 +60,45 @@ For Bitcoin testnet, the BIP9 starttime will be TBD (Epoch timestamp TBD) and BI
 
 ==Motivation==
 
-FIXME
+Many people want to see Bitcoin scale over time, allowing an increasing number of transactions on the block chain. It would come at an increased cost for the ecosystem (bandwidth, processing, and storage for relay nodes, as well as an impact on propagation speed of blocks on the network), but technology also improves over time. When all technologies depended on have improved as well as their availability on the market, there is no reason why Bitcoin's fundamental transaction rate cannot improve proportionally.
+
+However, at the same time, the current rate of blockchain growth is demonstratably too high for many users:
+full node count and percentage continue to drop (with the most-cited reason being blockchain-size related);
+miners are de-facto skipping validity checking of blocks before mining on top of them;
+and the total cost to sync a new node for the first time is growing significantly faster than technology improvements to reduce such costs.
+
+Currently, there is a consensus rule in place that limits the size of blocks to 1000000 bytes. Changing this presently requires a hard-forking change: one that will require every full node in the network to implement the new rules. The new chain created by those changed nodes will be rejected by old nodes, so this would effectively be a request to the ecosystem to migrate to a new and incompatible network. Doing this while controversy exists is dangerous to the network and the ecosystem.
+However, BIP-FIXME:hfprep prepares the network for reduced or modified rules provided they are set to activate no earlier than seven years out from their deployment.
+The excessive current block size limit, and the long-term scaling of the block size limit can both be cleanly addressed by an immediate reduction in the limit combined with a gradual lifting of this limit, such that it exceeds the current limit after seven years.
 
 ==Rationale==
 
-FIXME
+Won't sudden increases in the block size limit upset market forces?
+
+* Because every increase (including the first) is only 4.4%, risk from large market or technological changes is minimized.
+
+Why should the current block size limit be reduced to merely 300k?
+
+* Currently, the blockchain size is approximately 100 GB. If we assume a 17.7% rate of technological improvement, maintaining the current cost allows the growth of 17.7 GB over the next year. Across the expected 52596 blocks in a year, this leaves each block 337 kB to work with. Because we will be increasing the block size limit over time, this is rounded down to 300 kB.
+
+What is the purpose of the chosen growth rate?
+
+* The growth rate of 17.7% growth per year is consistent with the average growth rate of bandwidth the last years, which seems to be an important bottleneck. If over time, this growth factor is beyond what the actual technology offers, the intention should be to soft fork a tighter limit.
+* This growth rate leads to the new block size limit exceeding the current limit only after seven years, by which time existing nodes using BIP-FIXME:hfprep will relax their own block size rules, making this BIP a softfork rather than a hardfork.
+
+Why is median time past metric used rather than block time?
+
+* Using the "median time past" guarantees monotonic behaviour, as this median is required to be increasing, according to Bitcoin's existing consensus rules. Using the "median time past" of the block before means we know in advance what the limit of each block will be, without depending on the actual block's timestamp.
+
+What if the initial block size limit drop is too great?
+
+* Miners should be advised to soft-limit their blocks down to 300 kB, perhaps gradually, before this softfork is activated. This will allow the market time to adapt, and make it possible to back out of this softfork should serious problems arise.
 
 ==Backwards compatibility==
 
 With this algorithm, the block size will exceed the current 1 MB limit during 2024 June.
 Provided BIP-FIXME:blksize is accepted before 2017 June, this remains effectively a softfork for such updated nodes.
-Otherwise, it will be a hardfork for nodes not implementing BIP-FIXME:blksize.
+Otherwise, it will be a hardfork for nodes not implementing BIP-FIXME:hfprep.
 Either way, several years is sufficient time for all nodes to update so long as this proposal's extension beyond 1 MB sizes has consensus by then.
 
 ==Reference implementation==
