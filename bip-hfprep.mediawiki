@@ -1,7 +1,7 @@
 <pre>
   BIP: ?
   Layer: Consensus (hard fork)
-  Title: Preparation for block size limit changes
+  Title: Preparation for protocol changes
   Author: Luke Dashjr <luke+bip@dashjr.org>
   Comments-Summary: No comments yet.
   Comments-URI: FIXME
