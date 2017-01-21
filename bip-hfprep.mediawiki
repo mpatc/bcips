@@ -23,17 +23,51 @@ This BIP is licensed under the BSD 2-clause license.
 
 Seven years after the release date of each new full node implementation, the enforced consensus rules are to be changed as follows:
 
-* The block size limit shall be lifted to at least 32000000 bytes.
-* The block weight limit, if any, shall be removed entirely.
-* The sigop limit, if any, shall be removed entirely.
-* The max script element size shall be removed entirely.
-* If segwit is active, witness data shall be passively ignored for all inputs, rather than rejected on ones which do not meet the segwit template criteria.
-* No scripts shall be executed to determine transaction validity; they shall all be presumed to execute successfully.
-* The check that total output value does not exceed total input value shall be skipped, and blocks shall be accepted even if they appear to create new value out of thin air.
+* TODO: When building chains, ignore first X bits of prevblock header
+* `ContextualCheckBlockHeader` is skipped entirely:
+** The block target may be any parsable value. (Total work is to remain measured according to the claimed target.)
+** The "median time past" rule is not enforced. The block timestamp may be earlier than it.
+** The block timestamp has no constraints. It may be any value.
+** The block version header has no constraints. The minimum value specified by BIPs 34, 66, and 65 are no longer enforced.
+* (Enforced within `CheckBlock`:)
+** The block size limit shall be lifted to at least 32000000 bytes.
+** The first transaction of a block may have additional inputs beyond its Null-input.
+** Subsequent transactions in a block may have a single Null-input (provided it is the only input).
+** (Enforced within `CheckTransaction`:)
+*** [Block size limit should not be checked here.]
+** The sigop limit, if any, shall not be enforced.
+* (Enforced within `ContextualCheckBlock`:)
+** Lock times / final are not enforced.
+** BIP 34 (height-in-coinbase) is not enforced. (Note this may entail resuming explicit enforcement of BIP 30.)
+** The block weight limit, if any, is not enforced.
+* (Enforced within `ConnectBlock`:)
+** BIP 16 (P2SH) is not enforced.
+** BIP 68 (sequence locks) is not enforced.
+** (Enforced within `CheckTxInputs`:)
+*** Maturity check for generated coins is not enforced.
+*** Total output value may be greater than total input value, but must remain <= 2100000000000000 satoshis (21 MBTC).
+** Scripts are not executed and assumed valid.
+*** BIP 65 (OP_CLTV), BIP 66 (DERSIG), BIP 112 (OP_CSV), BIP 147 (nulldummy), and similar softforks affecting only scripts are not enforced.
+*** If segwit is active, witness data shall be passively ignored for all inputs, rather than rejected on ones which do not meet the segwit template criteria.
+*** The max script element size shall not be enforced.
+** The block reward limit is not enforced.
+
+Note the following rules are explicitly retained:
+* The block merkle root header must match that calculated from the merkle tree of transaction ids.
+* The merkle tree of transaction ids must not include any duplicates, or ids in the UTXO set as of the previous block (BIP 30).
+* Transaction output values must all each be >= 0.
+* Transactions may not spend the same input twice.
+* If segwit is activated, any witness commitment must be enforced.
+* Consumed inputs must exist in the UTXO set.
+
+Additionally, the node shall cease relaying transactions and blocks in contexts where they are typically presumed to only be relayed after validity is confirmed.
+
+The time used to trigger this intentional degradation to non-full node is to be the earliest of either the local system time, or the median time past for the best-known block header.
+(Contextual enforcement may opt to use the median time past of the block it is validating rather than the best-header, but in no case should the local time be ignored.)
 
 For the avoidance of doubt, node policy rules that do not affect the validity or invalidity of accepted blocks are not required to be modified.
 
-Node software should allow the user to override this relaxation (and enforce the full rules) in some unspecified manner.
+Node software should allow the user to override this relaxation (and unconditionally enforce the full rules) in some unspecified manner.
 
 All future BIPs introducing new rules should explicitly define a "rule relaxation behaviour" along these lines.
 
@@ -43,6 +77,14 @@ Currently any relaxation or similar modification of the protocol rules requires 
 By prematurely designing node software to relax their rules in the future, it is possible for future proposals to instead set a date at least that far in the future to activate, to effectively transform these kind of changes from a hardfork to a softfork.
 
 ==Rationale==
+
+Why must the generation transaction have a Null-input, if other inputs are used?
+
+* The Null-input contains the coinbase and witness nonce, which is needed to verify a witness commitment.
+
+Why is the local time used for triggering this condition?
+
+* Block timestamps are determined by miners.
 
 Why is a block size limit enforced at all, after the rules are relaxed?
 
@@ -59,6 +101,11 @@ Aren't these rules relaxed too much?
 Why should the value comparison check be relaxed? Won't this allow miners to print bitcoins?
 
 * Nodes should be kept updates, so this relaxation is only for forward compatibility with future protocol changes. It should never become the network rules on its own. The value comparison is relaxed so that features such as "confidential transactions" which hide values might be implemented with a new check, not so that the actual value can be created out of nothing. It could also be used to simplify some sidechain or extension block models.
+
+Why is the median-time-past not used rather than the specific block time?
+
+* Knowledge of median-time-past relies on context, while many of the limits being relaxed are currently checked outside of the block's context.
+* Since this BIP does not intend to actually change protocol rules itself, this is safe so long as protocol changes taking advantage of it wait out for median-time-past to proceed beyond the point where block time can be before the cutoff date.
 
 ==Backwards compatibility==
 
