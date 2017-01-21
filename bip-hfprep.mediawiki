@@ -45,7 +45,7 @@ Seven years after the release date of each new full node implementation, the enf
 ** BIP 68 (sequence locks) is not enforced.
 ** (Enforced within `CheckTxInputs`:)
 *** Maturity check for generated coins is not enforced.
-*** Total output value may be greater than total input value, but must remain <= 2100000000000000 satoshis (21 MBTC).
+*** Total output value may be greater than total input value, but must remain <= exactly 2100000000000000 satoshis (21 MBTC).
 ** Scripts are not executed and assumed valid.
 *** BIP 65 (OP_CLTV), BIP 66 (DERSIG), BIP 112 (OP_CSV), BIP 147 (nulldummy), and similar softforks affecting only scripts are not enforced.
 *** If segwit is active, witness data shall be passively ignored for all inputs, rather than rejected on ones which do not meet the segwit template criteria.
@@ -71,6 +71,8 @@ Node software should allow the user to override this relaxation (and uncondition
 
 All future BIPs introducing new rules should explicitly define a "rule relaxation behaviour" along these lines.
 
+Implementations should ensure that upgrading to a newer version of the software rewinds and attempts to fully validate blocks which were accepted under these relaxed rules.
+
 ==Motivation==
 
 Currently any relaxation or similar modification of the protocol rules requires a hardfork, since all old nodes will reject such blocks as invalid.
@@ -85,6 +87,10 @@ Why must the generation transaction have a Null-input, if other inputs are used?
 Why is the local time used for triggering this condition?
 
 * Block timestamps are determined by miners.
+
+Should the maximum output sum be slightly lower than 2100000000000000?
+
+* It is reasonable and possible that in the future, divisibility may be improved, leading to a maximum total sum of bitcoins closer to the full 21 MBTC goal.
 
 Why is a block size limit enforced at all, after the rules are relaxed?
 
