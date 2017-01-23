@@ -21,7 +21,7 @@ This BIP is licensed under the BSD 2-clause license.
 
 ==Specification==
 
-Upon activation, the block size limitation is replaced by the function below, applied to the median of the timestamps of the previous 11 blocks, or in code terms: the block size limit for pindexBlock is GetMaxBlockSize(pindexBlock->pprev->GetMedianTimePast()).
+Upon activation, the block size limitation is replaced by the function below, applied to the median of the timestamps of the previous 11 blocks, or in code terms: the block size limit for pindexBlock is <code>GetMaxBlockSize(pindexBlock->pprev->GetMedianTimePast())</code>.
 
 It implements a series of block size steps, one every ~97 days, starting at 300 kB in January 2017 and ending at just under 31 MB in July 2063, with each step increasing the maximum block size by 4.4%, allowing an overall growth of 17.7% per year.
 
@@ -48,7 +48,9 @@ uint32_t GetMaxBlockSize(int64_t nMedianTimePast) {
 }
 </pre>
 
-FIXME: Block weight limit
+When combined with BIP 141 in any activation order, its block weight limit is removed.
+
+The maximum size of a transaction stripped of witness data is limited to 1 MB.
 
 ===Deployment===
 
