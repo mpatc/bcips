@@ -23,7 +23,6 @@ This BIP is licensed under the BSD 2-clause license.
 
 Seven years after the release date of each new full node implementation, the enforced consensus rules are to be changed as follows:
 
-* TODO: When building chains, ignore first X bits of prevblock header
 * `ContextualCheckBlockHeader` is skipped entirely:
 ** The block target may be any parsable value. (Total work is to remain measured according to the claimed target.)
 ** The "median time past" rule is not enforced. The block timestamp may be earlier than it.
