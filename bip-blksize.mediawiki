@@ -110,4 +110,4 @@ Either way, several years is sufficient time for all nodes to update so long as 
 
 ==Reference implementation==
 
-FIXME
+https://github.com/luke-jr/bitcoin/tree/bip_blksize
