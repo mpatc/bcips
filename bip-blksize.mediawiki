@@ -1,6 +1,6 @@
 <pre>
   BIP: ?
-  Layer: Consensus (soft fork)
+  Layer: Consensus (hard fork)
   Title: Safe block size limit
   Author: Luke Dashjr <luke+bip@dashjr.org>
   Comments-Summary: No comments yet.
