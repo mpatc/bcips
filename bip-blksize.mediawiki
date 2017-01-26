@@ -23,7 +23,7 @@ This BIP is licensed under the BSD 2-clause license.
 
 Upon activation, the block size limitation is replaced by the function below, applied to the median of the timestamps of the previous 11 blocks, or in code terms: the block size limit for pindexBlock is <code>GetMaxBlockSize(pindexBlock->pprev->GetMedianTimePast())</code>.
 
-It implements a series of block size steps, one every ~97 days, starting at 300 kB in January 2017 and ending at just under 31 MB in July 2063, with each step increasing the maximum block size by 4.4%, allowing an overall growth of 17.7% per year.
+It implements a series of block size steps, one every ~97 days, and ending at just under 31 MB in July 2063, with each step increasing the maximum block size by 4.4%, allowing an overall growth of 17.7% per year.
 
 <pre>
 uint32_t GetMaxBlockSize(int64_t nMedianTimePast) {
@@ -85,6 +85,7 @@ Won't sudden increases in the block size limit upset market forces?
 Why should the current block size limit be reduced to merely 300k?
 
 * Currently, the blockchain size is approximately 100 GB. If we assume a 17.7% rate of technological improvement, maintaining the current cost allows the growth of 17.7 GB over the next year. Across the expected 52596 blocks in a year, this leaves each block 337 kB to work with. Because we will be increasing the block size limit over time, this is rounded down to 300 kB. (Note that the block weight limit is also rounded up.)
+* 300k is only used for the block size limit should the proposal be activated prior to 2017 April. If it is deemed too small, activation can simply be delayed until the desired limit is reached, retaining the current 1 MB block size limit until that time (or even an additional softfork used to create a temporary limit at the desired level).
 
 What is the purpose of the chosen growth rate?
 
