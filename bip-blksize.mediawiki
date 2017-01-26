@@ -48,7 +48,9 @@ uint32_t GetMaxBlockSize(int64_t nMedianTimePast) {
 }
 </pre>
 
-When combined with BIP 141 in any activation order, its block weight limit is removed.
+The concept of block weight is introduced or modified:
+all witness data, including both scriptSig (pre-segwit transactions) and segwit witness data (if applicable), is measured as 1 weight-unit (WU), while all other data in the block is measured as 4 WU.
+The weight of a block may not exceed double the size limit in bytes.
 
 The maximum size of a transaction stripped of witness data is limited to 1 MB.
 
@@ -60,10 +62,6 @@ For Bitcoin mainnet, the BIP9 starttime will be TBD (Epoch timestamp TBD) and BI
 
 For Bitcoin testnet, the BIP9 starttime will be TBD (Epoch timestamp TBD) and BIP9 timeout will be TBD (Epoch timestamp TBD).
 
-As a safety mechanism, after the first four steps conclude (that is, on 2018 January 24), this BIP will be cancelled and the block size limit immediately returned to 1000000 bytes, unless it is renewed via a second BIP9 deployment.
-Renewal deployment is to occur using the same name, bit, and starttime; but with a timeout 6 months later.
-If the initial activation is not until after the first four steps, no renewal is necessary.
-
 ==Motivation==
 
 Many people want to see Bitcoin scale over time, allowing an increasing number of transactions on the block chain. It would come at an increased cost for the ecosystem (bandwidth, processing, and storage for relay nodes, as well as an impact on propagation speed of blocks on the network), but technology also improves over time. When all technologies depended on have improved as well as their availability on the market, there is no reason why Bitcoin's fundamental transaction rate cannot improve proportionally.
@@ -72,10 +70,11 @@ However, at the same time, the current rate of blockchain growth is demonstratab
 full node count and percentage continue to drop (with the most-cited reason being blockchain-size related);
 miners are de-facto skipping validity checking of blocks before mining on top of them;
 and the total cost to sync a new node for the first time is growing significantly faster than technology improvements to reduce such costs.
+It is a regular occurrence to see new users complain about the time to setup a node, and established members of the community recommending downgrading to non-full wallet software, which results in the new user gaining bitcoin as a currency, but not the security of Bitcoin itself, and compromises the integrity of the network as a whole by widespread usage.
 
 Currently, there is a consensus rule in place that limits the size of blocks to 1000000 bytes. Changing this presently requires a hard-forking change: one that will require every full node in the network to implement the new rules. The new chain created by those changed nodes will be rejected by old nodes, so this would effectively be a request to the ecosystem to migrate to a new and incompatible network. Doing this while controversy exists is dangerous to the network and the ecosystem.
-However, BIP-FIXME:hfprep prepares the network for reduced or modified rules provided they are set to activate no earlier than seven years out from their deployment.
-The excessive current block size limit, and the long-term scaling of the block size limit can both be cleanly addressed by an immediate reduction in the limit combined with a gradual lifting of this limit, such that it exceeds the current limit after seven years.
+This BIP places the expansion of the block size limit several years out, so as to avoid controversy and give plenty of time to upgrade.
+Upgrading can be done even if this BIP does not activate for several years due to potential controversy over the short-term reductions, and as such consensus for its deployment should be determined only by the long-term block size increase.
 
 ==Rationale==
 
@@ -85,7 +84,7 @@ Won't sudden increases in the block size limit upset market forces?
 
 Why should the current block size limit be reduced to merely 300k?
 
-* Currently, the blockchain size is approximately 100 GB. If we assume a 17.7% rate of technological improvement, maintaining the current cost allows the growth of 17.7 GB over the next year. Across the expected 52596 blocks in a year, this leaves each block 337 kB to work with. Because we will be increasing the block size limit over time, this is rounded down to 300 kB.
+* Currently, the blockchain size is approximately 100 GB. If we assume a 17.7% rate of technological improvement, maintaining the current cost allows the growth of 17.7 GB over the next year. Across the expected 52596 blocks in a year, this leaves each block 337 kB to work with. Because we will be increasing the block size limit over time, this is rounded down to 300 kB. (Note that the block weight limit is also rounded up.)
 
 What is the purpose of the chosen growth rate?
 
@@ -98,15 +97,20 @@ Why is median time past metric used rather than block time?
 
 What if the initial block size limit drop is too great?
 
-* Miners should be advised to soft-limit their blocks down to 300 kB, perhaps gradually, before this softfork is activated. This will allow the market time to adapt, and make it possible to back out of this softfork should serious problems arise.
-* This BIP requires a renewal within or after the first four steps to continue on course. If after activation, the reduced block size limit is found to be problematic, the network can opt not to renew it, or to make modifications before renewal.
+* Miners should be advised to soft-limit their blocks down to the current proposed limit, perhaps gradually, before this softfork is activated. This will allow the market time to adapt, and make it possible to back out of this softfork should serious problems arise.
+
+Why is the block weight limit chosen at twice the size limit?
+
+* With a typical 2-of-2 multisig spend with 2 inputs and 2 outputs, the weight is approximately 80% higher than the size.
+
+Isn't just the weight limit sufficient?
+
+* Concerns exist that only a weight limit increases the resource requirements to handle spam blocks, while legitimate blocks only get to use a subset of the maximum block size for legitimate capacity. Enforcing a block size limit keeps the worst-case scenario closer to legitimate real-world usage.
 
 ==Backwards compatibility==
 
 With this algorithm, the block size will exceed the current 1 MB limit during 2024 June.
-Provided BIP-FIXME:blksize is accepted before 2017 June, this remains effectively a softfork for such updated nodes.
-Otherwise, it will be a hardfork for nodes not implementing BIP-FIXME:hfprep.
-Either way, several years is sufficient time for all nodes to update so long as this proposal's extension beyond 1 MB sizes has consensus by then.
+Several years is sufficient time for all nodes to update so long as this proposal's extension beyond 1 MB sizes has consensus by then.
 
 ==Reference implementation==
 
