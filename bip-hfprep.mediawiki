@@ -1,6 +1,5 @@
 <pre>
   BIP: ?
-  Layer: Consensus (hard fork)
   Title: Preparation for protocol changes
   Author: Luke Dashjr <luke+bip@dashjr.org>
   Comments-Summary: No comments yet.
