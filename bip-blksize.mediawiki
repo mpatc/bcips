@@ -23,7 +23,7 @@ This BIP is licensed under the BSD 2-clause license.
 
 Upon activation, the block size limitation is replaced by the function below, applied to the median of the timestamps of the previous 11 blocks, or in code terms: the block size limit for pindexBlock is <code>GetMaxBlockSize(pindexBlock->pprev->GetMedianTimePast())</code>.
 
-It implements a series of block size steps, one every ~97 days, and ending at just under 31 MB in July 2063, with each step increasing the maximum block size by 4.4%, allowing an overall growth of 17.7% per year.
+It implements a series of block size steps, one every ~97 days, and ending at just under 31 MB in 2045 April, with each step increasing the maximum block size by 4.4%, allowing an overall growth of 17.7% per year.
 The initial size limit upon activation depends on when it is activated: for example, if in 2018 January, it would begin at ~356k; or if in 2024 June, it would begin at just over 1 MB.
 
 <pre>
