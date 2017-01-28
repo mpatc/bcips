@@ -126,4 +126,4 @@ Several years is sufficient time for all nodes to update so long as this proposa
 
 ==Reference implementation==
 
-https://github.com/luke-jr/bitcoin/tree/bip_blksize
+https://github.com/luke-jr/bitcoin/tree/bip-blksize
