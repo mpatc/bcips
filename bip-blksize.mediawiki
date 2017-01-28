@@ -1,7 +1,7 @@
 <pre>
   BIP: ?
   Layer: Consensus (hard fork)
-  Title: Safe block size limit
+  Title: Safer and growing block size limit
   Author: Luke Dashjr <luke+bip@dashjr.org>
   Comments-Summary: No comments yet.
   Comments-URI: FIXME
@@ -13,7 +13,7 @@
 
 ==Abstract==
 
-The block size limit is reduced to a safe value (optional), and gradually increased over time, eventually expanding beyond the current limits.
+The block size limit is reduced to a reasonably safe value (optional), and gradually increased over time, eventually expanding beyond the current limits.
 
 ==Copyright==
 
