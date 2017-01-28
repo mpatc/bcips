@@ -63,6 +63,8 @@ This BIP is to be deployed in two stages:
 
 The first stage is deploying in full node software deactivated. This requires consensus from the entire Bitcoin community, and ought to be evaluated by the release manager of each full node implementation before release. All full node implementations must deploy this change before 2024, or the proposal is deemed to have failed.
 
+Since this stage only implies growth of the block size limit (not reduction), far in advance of its effective date, and should not in any way impede the efforts of others to increase (or decrease) it faster/sooner (eg, BIPs 10x) or even substantially alter the very concept of decentralised consensus (eg, BU), it is hoped this proposal will be uncontroversial and thus able to attain consensus from the entire community at the very least as a better failure scenario than the current "1 MB forever" (or "2-3 MB forever" with segwit).
+
 ====Stage 2====
 
 After consensus is established (but not necessarily before all nodes have deployed compatible software, so long as this still occurs before 2024), the BIP may be activated using BIP 9 using the '''name''' TBD and '''bit''' TBD.
