@@ -13,7 +13,7 @@
 
 ==Abstract==
 
-The block size limit is reduced to a safe value, and gradually increased over time, eventually expanding beyond the current limits.
+The block size limit is reduced to a safe value (optional), and gradually increased over time, eventually expanding beyond the current limits.
 
 ==Copyright==
 
@@ -24,6 +24,7 @@ This BIP is licensed under the BSD 2-clause license.
 Upon activation, the block size limitation is replaced by the function below, applied to the median of the timestamps of the previous 11 blocks, or in code terms: the block size limit for pindexBlock is <code>GetMaxBlockSize(pindexBlock->pprev->GetMedianTimePast())</code>.
 
 It implements a series of block size steps, one every ~97 days, and ending at just under 31 MB in July 2063, with each step increasing the maximum block size by 4.4%, allowing an overall growth of 17.7% per year.
+The initial size limit upon activation depends on when it is activated: for example, if in 2018 January, it would begin at ~356k; or if in 2024 June, it would begin at just over 1 MB.
 
 <pre>
 uint32_t GetMaxBlockSize(int64_t nMedianTimePast) {
@@ -56,11 +57,19 @@ The maximum size of a transaction stripped of witness data is limited to 1 MB.
 
 ===Deployment===
 
-This BIP will be deployed by "version bits" BIP9 with the name TBD and using bit TBD.
+This BIP is to be deployed in two stages:
 
-For Bitcoin mainnet, the BIP9 starttime will be TBD (Epoch timestamp TBD) and BIP9 timeout will be TBD (Epoch timestamp TBD).
+====Stage 1====
 
-For Bitcoin testnet, the BIP9 starttime will be TBD (Epoch timestamp TBD) and BIP9 timeout will be TBD (Epoch timestamp TBD).
+The first stage is deploying in full node software deactivated. This requires consensus from the entire Bitcoin community, and ought to be evaluated by the release manager of each full node implementation before release. All full node implementations must deploy this change before 2024, or the proposal is deemed to have failed.
+
+====Stage 2====
+
+After consensus is established (but not necessarily before all nodes have deployed compatible software, so long as this still occurs before 2024), the BIP may be activated using BIP 9 using the '''name''' TBD and '''bit''' TBD.
+
+For Bitcoin mainnet, the BIP9 '''starttime''' will be TBD (Epoch timestamp TBD) and BIP9 '''timeout''' will be 2024 September TBD (Epoch timestamp TBD).
+
+For Bitcoin testnet, the BIP9 '''starttime''' will be TBD (Epoch timestamp TBD) and BIP9 '''timeout''' will be TBD (Epoch timestamp TBD).
 
 ==Motivation==
 
@@ -85,11 +94,11 @@ Won't sudden increases in the block size limit upset market forces?
 Why should the current block size limit be reduced to merely 300k?
 
 * Currently, the blockchain size is approximately 100 GB. If we assume a 17.7% rate of technological improvement, maintaining the current cost allows the growth of 17.7 GB over the next year. Across the expected 52596 blocks in a year, this leaves each block 337 kB to work with. Because we will be increasing the block size limit over time, this is rounded down to 300 kB. (Note that the block weight limit is also rounded up.)
-* 300k is only used for the block size limit should the proposal be activated prior to 2017 April. If it is deemed too small, activation can simply be delayed until the desired limit is reached, retaining the current 1 MB block size limit until that time (or even an additional softfork used to create a temporary limit at the desired level).
+* '''300k is only used for the block size limit should the proposal be activated prior to 2017 April.''' If it is deemed too small, activation can simply be delayed until the desired limit is reached, retaining the current block size/weight limits until that time (or even an additional softfork used to create a temporary limit at the desired level).
 
 What is the purpose of the chosen growth rate?
 
-* The growth rate of 17.7% growth per year is consistent with the average growth rate of bandwidth the last years, which seems to be an important bottleneck. If over time, this growth factor is beyond what the actual technology offers, the intention should be to soft fork a tighter limit.
+* The growth rate of 17.7% growth per year is consistent with the average growth rate of bandwidth the last years, which seems to be an important bottleneck. If over time, the 17.7% annual block size growth factor is beyond what actual technology improvements offer, the intention should be to soft fork to a smaller block size limit.
 * This growth rate leads to the new block size limit exceeding the current limit only after seven years, by which time existing nodes using BIP-FIXME:hfprep will relax their own block size rules, making this BIP a softfork rather than a hardfork.
 
 Why is median time past metric used rather than block time?
@@ -110,8 +119,8 @@ Isn't just the weight limit sufficient?
 
 ==Backwards compatibility==
 
-With this algorithm, the block size will exceed the current 1 MB limit during 2024 June.
-Several years is sufficient time for all nodes to update so long as this proposal's extension beyond 1 MB sizes has consensus by then.
+With this algorithm, the block size may exceed the current limits during 2024 June.
+Several years is sufficient time for all nodes to update so long as this proposal's extension beyond current limits has consensus by then.
 
 ==Reference implementation==
 
