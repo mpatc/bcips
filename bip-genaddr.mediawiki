@@ -1,0 +1,312 @@
+<pre>
+  BIP: ?
+  Title: Payment address tokens
+  Author: Luke Dashjr <luke+bip@dashjr.org>
+  Comments-Summary: No comments yet.
+  Comments-URI: ?
+  Status: Draft
+  Type: Standards Track
+  Created: 2016-03-14
+  License: BSD-2-Clause
+</pre>
+
+==Abstract==
+
+Defines a new non-interactive address format that enables resolving several shortcomings with current addresses.
+
+==Copyright==
+
+This BIP is licensed under BSD 2-clause license.
+
+==Specification==
+
+===Binary format===
+
+varint: version, always 0
+varint: cryptocurrency id (SLIP 44)
+	0 - Bitcoin
+	1 - Testnet
+uint8: flags
+	01 - Expiration: Limited absolute usage count
+	02 - Expiration: By timestamp
+	04 - Expiration: By block height
+optional: varint: absolute usage count
+optional: uint32: expiration timestamp in days since POSIX epoch
+optional: uint32: expiration block height
+varint: number-of-parts
+for each part:
+	byte: part type
+		00 - literal code (do not parse!)
+		01 - blob
+	varint: part data length
+	...: part data
+		for 00: literal code
+		for 01: Script to evaluate, returning:
+			<serialised scriptHash> <blob preimage>
+
+Blobs are generated using a variant of the standard Bitcoin protocol Script, with some additions:
+	OP_PUBDERIV (0xX0)
+		Pop off the stack: i (top element), Cpar, Kpar
+		If 'i' is 32 bytes, skip HMAC?
+		Derive the child key per BIP 32
+		Push onto the stack: Ci (new top element), Ki
+	OP_ECDH (0xX1)
+		FIXME: what is needed for stealth address stuff?
+	OP_KEYGEN (0xX2)
+		FIXME
+	OP_RAND (0xX3)
+		FIXME
+	OP_TAKE_PARTS (0xX5)
+		Pop off the stack: n
+		The most recent N scriptPubKey parts are popped, and pushed to the Script's stack as a single element.
+		Push onto the stack: serialised Script
+	OP_PUSH_REUSE_NUMBER (0xX8)
+		FIXME
+	OP_PUSH_HEIGHT (0xX9)
+	OP_PUSH_TIME (0xXa)
+
+The Script must return either one or two stack items, or this address is invalid.
+If it returns one, it is taken to be literal code to append to the scriptPubKey.
+When two items are returned, the top-most is a preimage of data, and the next is a serialised Script containing only simple cryptographic hash opcodes.
+The preimage is to be hashed according to the hashing-Script, and the result added to the scriptPubKey as a push (the pushdata opcode must be added).
+
+Any scriptPubKey output from this function which has a push greater than 15 bits for which a preimage is not known, is invalid and MUST be rejected.
+
+==Examples==
+
+===Pay to pubkey-hash (legacy)===
+
+    00 version
+    00 cryptocurrency
+    01 flags (limited usage count)
+    01 usage count limited to 1
+    02 number of parts
+    01 part 1 type: blob
+    23 part 1 length
+    01 a6 20 {32 bytes of SHA256(pubkey)} part 1: PUSH(RIPEMD160) PUSH(SHA256(pubkey))
+    00 part 2 type: literal code
+    01 part 2 length
+    ac part 2: CHECKSIG
+
+    0000010102012301a620{32B}0001ac
+
+===Pay to multisig (sPK)===
+
+2-of-3
+
+    00 version
+    00 cryptocurrency
+    01 flags (limited usage count)
+    01 usage count limited to 1
+    07 number of parts
+    00 part 1 type: literal code
+    04 part 1 length
+    82 63 76 a9 part 1: SIZE IF DUP HASH160
+    01 part 2 type: blob
+    23 part 2 length
+    01 a6 20 {32 bytes of SHA256(pubkey A)} part 2: PUSH(RIPEMD160) PUSH(SHA256(pubkey))
+    00 part 3 type: literal code
+    09 part 3 length
+    88 ac 68 7b 7b 82 63 76 a9 part 3: EQUALVERIFY CHECKSIG ENDIF ROT ROT SIZE IF DUP HASH160
+    01 part 4 type: blob
+    23 part 4 length
+    01 a6 20 {32 bytes of SHA256(pubkey B)} part 4: PUSH(RIPEMD160) PUSH(SHA256(pubkey))
+    00 part 5 type: literal code
+    09 part 5 length
+    88 ac 68 7b 7b 82 63 76 a9 part 5: EQUALVERIFY CHECKSIG ENDIF ROT ROT SIZE IF DUP HASH160
+    01 part 6 type: blob
+    23 part 6 length
+    01 a6 20 {32 bytes of SHA256(pubkey C)} part 6: PUSH(RIPEMD160) PUSH(SHA256(pubkey))
+    00 part 7 type: literal code
+    05 part 7 length
+    88 ac 68 82 87 part 7: EQUALVERIFY CHECKSIG ENDIF 2 EQUAL
+
+    00000101070004826376a9012301a620{32B}000988ac687b7b826376a9012301a620{32B}000988ac687b7b826376a9012301a620{32B}000588ac688287
+
+===Pay to script-hash (BIP16)===
+
+    00 version
+    00 cryptocurrency
+    01 flags (limited usage count)
+    01 usage count limited to 1
+    05 number of parts
+    00 part 1 type: literal code
+    01 part 1 length
+    a9 part 1: HASH160
+    01 part 2 type: blob
+    23 part 2 length
+    01 a6 20 {32 bytes of SHA256(pubkey)} part 2: PUSH(RIPEMD160) PUSH(SHA256(pubkey))
+    00 part 3 type: literal code
+    01 part 3 length
+    ac part 3: CHECKSIG
+    01 part 4 type: blob
+    05 part 4 length
+    01 a6 82 X5 a8 part 4: PUSH(RIPEMD160) 2 TAKE_PARTS SHA256
+    00 part 5 type: literal code
+    01 part 5 length
+    87 part 5: EQUAL
+
+    00000101050001a9012301a620{32B}0001ac010501a682X5a8000187
+
+===Pay to script-hash (BIP16, multisig)===
+
+2-of-3
+
+    00 version
+    00 cryptocurrency
+    01 flags (limited usage count)
+    01 usage count limited to 1
+    0a number of parts
+    00 part 1 type: literal code
+    01 part 1 length
+    a9 part 1: HASH160
+    00 part 2 type: literal code
+    04 part 2 length
+    82 63 76 a9 part 2: SIZE IF DUP HASH160
+    01 part 3 type: blob
+    23 part 3 length
+    01 a6 20 {32 bytes of SHA256(pubkey A)} part 3: PUSH(RIPEMD160) PUSH(SHA256(pubkey))
+    00 part 4 type: literal code
+    09 part 4 length
+    88 ac 68 7b 7b 82 63 76 a9 part 4: EQUALVERIFY CHECKSIG ENDIF ROT ROT SIZE IF DUP HASH160
+    01 part 5 type: blob
+    23 part 5 length
+    01 a6 20 {32 bytes of SHA256(pubkey B)} part 5: PUSH(RIPEMD160) PUSH(SHA256(pubkey))
+    00 part 6 type: literal code
+    09 part 6 length
+    88 ac 68 7b 7b 82 63 76 a9 part 6: EQUALVERIFY CHECKSIG ENDIF ROT ROT SIZE IF DUP HASH160
+    01 part 7 type: blob
+    23 part 7 length
+    01 a6 20 {32 bytes of SHA256(pubkey C)} part 7: PUSH(RIPEMD160) PUSH(SHA256(pubkey))
+    00 part 8 type: literal code
+    05 part 8 length
+    88 ac 68 82 87 part 8: EQUALVERIFY CHECKSIG ENDIF 2 EQUAL
+    01 part 9 type: blob
+    05 part 9 length
+    01 a6 87 X5 a8 part 9: PUSH(RIPEMD160) 7 TAKE_PARTS SHA256
+    00 part 10 type: literal code
+    01 part 10 length
+    87 part 10: EQUAL
+
+    000001010a0001a90004826376a9012301a620{32B}000988ac687b7b826376a9012301a620{32B}000988ac687b7b826376a9012301a620{32B}000588ac688287010501a687X5a8000187
+
+===Pay to witness-pubkey-hash (segwit)===
+
+    00 version
+    00 cryptocurrency
+    01 flags (limited usage count)
+    01 usage count limited to 1
+    04 number of parts
+    00 part 1 type: literal code
+    01 part 1 length
+    00 part 1: 0
+    01 part 2 type: blob
+    23 part 2 length
+    01 a6 20 {32 bytes of SHA256(pubkey)} part 2: PUSH(RIPEMD160) PUSH(SHA256(pubkey))
+    00 part 3 type: literal code
+    01 part 3 length
+    ac part 3: CHECKSIG
+    01 part 4 type: blob
+    05 part 4 length
+    01 a6 82 X5 a8 part 4: PUSH(RIPEMD160) 2 TAKE_PARTS SHA256
+
+    0000010104000100012301a620{32B}0001ac010501a682X5a8
+
+===Pay to witness-script-hash (segwit)===
+
+    00 version
+    00 cryptocurrency
+    01 flags (limited usage count)
+    01 usage count limited to 1
+    04 number of parts
+    00 part 1 type: literal code
+    01 part 1 length
+    00 part 1: 0
+    01 part 2 type: blob
+    23 part 2 length
+    01 a6 20 {32 bytes of SHA256(pubkey)} part 2: PUSH(RIPEMD160) PUSH(SHA256(pubkey))
+    00 part 3 type: literal code
+    01 part 3 length
+    ac part 3: CHECKSIG
+    01 part 4 type: blob
+    05 part 4 length
+    01 a6 82 X5 a8 part 4: PUSH(RIPEMD160) 2 TAKE_PARTS SHA256
+
+    0000010104000100012301a620{32B}0001ac010501a682X5a8
+
+===Pay to witness-script-hash (segwit, multisig)===
+
+2-of-3
+
+    00 version
+    00 cryptocurrency
+    01 flags (limited usage count)
+    01 usage count limited to 1
+    09 number of parts
+    00 part 1 type: literal code
+    01 part 1 length
+    00 part 1: 0
+    00 part 2 type: literal code
+    04 part 2 length
+    82 63 76 a9 part 2: SIZE IF DUP HASH160
+    01 part 3 type: blob
+    23 part 3 length
+    01 a6 20 {32 bytes of SHA256(pubkey A)} part 3: PUSH(RIPEMD160) PUSH(SHA256(pubkey))
+    00 part 4 type: literal code
+    09 part 4 length
+    88 ac 68 7b 7b 82 63 76 a9 part 4: EQUALVERIFY CHECKSIG ENDIF ROT ROT SIZE IF DUP HASH160
+    01 part 5 type: blob
+    23 part 5 length
+    01 a6 20 {32 bytes of SHA256(pubkey B)} part 5: PUSH(RIPEMD160) PUSH(SHA256(pubkey))
+    00 part 6 type: literal code
+    09 part 6 length
+    88 ac 68 7b 7b 82 63 76 a9 part 6: EQUALVERIFY CHECKSIG ENDIF ROT ROT SIZE IF DUP HASH160
+    01 part 7 type: blob
+    23 part 7 length
+    01 a6 20 {32 bytes of SHA256(pubkey C)} part 7: PUSH(RIPEMD160) PUSH(SHA256(pubkey))
+    00 part 8 type: literal code
+    05 part 8 length
+    88 ac 68 82 87 part 8: EQUALVERIFY CHECKSIG ENDIF 2 EQUAL
+    01 part 9 type: blob
+    05 part 9 length
+    01 a6 87 X5 a8 part 9: PUSH(RIPEMD160) 7 TAKE_PARTS SHA256
+
+    00000101090001000004826376a9012301a620{32B}000988ac687b7b826376a9012301a620{32B}000988ac687b7b826376a9012301a620{32B}000588ac688287010501a687X5a8
+
+===Reusable address for a single counterparty===
+===Reusable multisig address for a single counterparty===
+===Pay to stealth address===
+
+==Motivation==
+
+Common problems with current addresses include:
+
+* They special-case specific transaction types, and have needed sender-side upgrades for new types.
+* Outputs are produced which cannot be distinguished from disguised data storage, making spam detection harder.
+* Privacy is severely harmed by reuse of addresses.
+* Funds can be lost due to (accidental or intentional) reuse of very old addresses.
+
+Therefore, to solve these issues, the following requirements are met:
+
+* Multisig wallets must be supported.
+* Bare scripts, BIP16 P2SH, Segwit P2SH, and Segwit P2PKH must all be supported. Ideally, future similar softforks should be supported without sender changes.
+* Must be able to provide preimages of all data larger than 15 bits. (For compatibility with P2SH^2 systems.)
+* Capable of BIP32 public->public derivation.
+* Safely reusable while preserving security and privacy as much as possible. (Pubkeys may need to be disclosed for this.)
+* Should support explicit expiration timestamp/height.
+* https://github.com/sipa/ezbase32
+	does it propagate changes in any character to the rest? (avoiding lookalike attacks)
+
+==Rationale==
+
+TODO
+
+==Backwards compatibility==
+
+As with all new address formats, old wallets will be unable to send to these initially, and some time will be necessary before recipients can rely on senders being able to use them.
+
+However, unlike existing formats, this one is hoped to adapt better to new transaction types, and not need further revision quite as quickly.
+
+==Reference implementation==
+
+TODO
