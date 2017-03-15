@@ -22,48 +22,48 @@ This BIP is licensed under BSD 2-clause license.
 
 ===Binary format===
 
-varint: version, always 0
-varint: cryptocurrency id (SLIP 44)
-	0 - Bitcoin
-	1 - Testnet
-uint8: flags
-	01 - Expiration: Limited absolute usage count
-	02 - Expiration: By timestamp
-	04 - Expiration: By block height
-optional: varint: absolute usage count
-optional: uint32: expiration timestamp in days since POSIX epoch
-optional: uint32: expiration block height
-varint: number-of-parts
-for each part:
-	byte: part type
-		00 - literal code (do not parse!)
-		01 - blob
-	varint: part data length
-	...: part data
-		for 00: literal code
-		for 01: Script to evaluate, returning:
-			<serialised scriptHash> <blob preimage>
+* varint: version, always 0
+* varint: cryptocurrency id (SLIP 44)
+** 0 - Bitcoin
+** 1 - Testnet
+* uint8: flags
+** 01 - Expiration: Limited absolute usage count
+** 02 - Expiration: By timestamp
+** 04 - Expiration: By block height
+* optional: varint: absolute usage count
+* optional: uint32: expiration timestamp in days since POSIX epoch
+* optional: uint32: expiration block height
+* varint: number-of-parts
+* for each part:
+** byte: part type
+*** 00 - literal code (do not parse!)
+*** 01 - blob
+** varint: part data length
+** ...: part data
+*** for 00: literal code
+*** for 01: Script to evaluate, returning:
+**** <serialised scriptHash> <blob preimage>
 
 Blobs are generated using a variant of the standard Bitcoin protocol Script, with some additions:
-	OP_PUBDERIV (0xX0)
-		Pop off the stack: i (top element), Cpar, Kpar
-		If 'i' is 32 bytes, skip HMAC?
-		Derive the child key per BIP 32
-		Push onto the stack: Ci (new top element), Ki
-	OP_ECDH (0xX1)
-		FIXME: what is needed for stealth address stuff?
-	OP_KEYGEN (0xX2)
-		FIXME
-	OP_RAND (0xX3)
-		FIXME
-	OP_TAKE_PARTS (0xX5)
-		Pop off the stack: n
-		The most recent N scriptPubKey parts are popped, and pushed to the Script's stack as a single element.
-		Push onto the stack: serialised Script
-	OP_PUSH_REUSE_NUMBER (0xX8)
-		FIXME
-	OP_PUSH_HEIGHT (0xX9)
-	OP_PUSH_TIME (0xXa)
+* OP_PUBDERIV (0xX0)
+** Pop off the stack: i (top element), Cpar, Kpar
+** If 'i' is 32 bytes, skip HMAC?
+** Derive the child key per BIP 32
+** Push onto the stack: Ci (new top element), Ki
+* OP_ECDH (0xX1)
+** FIXME: what is needed for stealth address stuff?
+* OP_KEYGEN (0xX2)
+** FIXME
+* OP_RAND (0xX3)
+** FIXME
+* OP_TAKE_PARTS (0xX5)
+** Pop off the stack: n
+** The most recent N scriptPubKey parts are popped, and pushed to the Script's stack as a single element.
+** Push onto the stack: serialised Script
+* OP_PUSH_REUSE_NUMBER (0xX8)
+** FIXME
+* OP_PUSH_HEIGHT (0xX9)
+* OP_PUSH_TIME (0xXa)
 
 The Script must return either one or two stack items, or this address is invalid.
 If it returns one, it is taken to be literal code to append to the scriptPubKey.
