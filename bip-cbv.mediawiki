@@ -42,9 +42,9 @@ Otherwise, script execution will continue as if a NOP had been executed.
 
 This BIP will be deployed by "version bits with guaranteed lock-in" [[bip-0008.mediawiki|BIP8]] with the '''name''' "cbv" and using '''bit''' TBD.
 
-For Bitcoin '''mainnet''', the BIP9 '''starttime''' will be TBD (Epoch timestamp TBD) and BIP9 '''timeout''' will be TBD (Epoch timestamp TBD).
+For Bitcoin '''mainnet''', the BIP8 '''starttime''' will be TBD (Epoch timestamp TBD) and BIP8 '''timeout''' will be TBD (Epoch timestamp TBD).
 
-For Bitcoin '''mainnet''', the BIP9 '''starttime''' will be TBD (Epoch timestamp TBD) and BIP9 '''timeout''' will be TBD (Epoch timestamp TBD).
+For Bitcoin '''mainnet''', the BIP8 '''starttime''' will be TBD (Epoch timestamp TBD) and BIP8 '''timeout''' will be TBD (Epoch timestamp TBD).
 
 ==Motivation==
 
