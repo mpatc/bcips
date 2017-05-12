@@ -1,0 +1,74 @@
+<pre>
+  BIP: ?
+  Layer: Consensus (soft fork)
+  Title: Block signal enforcement via tx fees
+  Author: Luke Dashjr <luke+bip@dashjr.org>
+  Comments-Summary: No comments yet.
+  Comments-URI: FIXME
+  Status: Draft
+  Type: Standards Track
+  Created: 2017-05-12
+  License: BSD-2-Clause
+</pre>
+
+==Abstract==
+
+This BIP describes a new opcode (<code>OP_CHECKBLOCKVERSION</code>) for the Bitcoin scripting system that allows construction of transactions which are valid only within blocks signalling for or against arbitrary network upgrades.
+
+==Copyright==
+
+This BIP is licensed under the BSD 2-clause license.
+
+==Specification==
+
+<code>OP_CHECKBLOCKVERSION</code> redefines the existing <code>OP_NOP6</code> opcode.
+
+When this opcode is executed:
+
+* If the stack has fewer than 2 elements, the script fails.
+* If the top 2 elements in the stack cannot be interpreted as a minimal-length 32-bit CScriptNum, the script fails.
+* If either of the top two elements, when interpreted as a CScriptNum, is negative, the opcode completes successfully and script continues as normal. (This allows future upgrades to use the opcode for another purpose.)
+* If the stack has fewer than 3 elements, the script fails.
+* If the third-from-top element cannot be interpreted as a minimal-length 40-bit CScriptNum, the script fails.
+* The top 3 elements of the stack are defined as: ParamVersionMask (topmost), ParamBitValues (second-to-top), and ParamLockTime (third-from-top).
+* If ParamLockTime is negative, the script fails.
+* If ParamLockTime exceeds the previous block's height or median-time-past (selected by <code>LOCKTIME_THRESHOLD</code>), the opcode completes successfully and script continues as normal.
+* ParamVersionMask is used to select the bits of the block's version that are to be compared. Any bit not set in ParamVersionMask is excluded from the block's version, and more-significant bits are shifted forward. This modified block version is defined as ComparisonBlockVersion.
+* If ComparisonBlockVersion does not match ParamBitValues, then script fails.
+
+Otherwise, script execution will continue as if a NOP had been executed.
+
+===Deployment===
+
+This BIP will be deployed by "version bits with guaranteed lock-in" [[bip-0008.mediawiki|BIP8]] with the '''name''' "cbv" and using '''bit''' TBD.
+
+For Bitcoin '''mainnet''', the BIP9 '''starttime''' will be TBD (Epoch timestamp TBD) and BIP9 '''timeout''' will be TBD (Epoch timestamp TBD).
+
+For Bitcoin '''mainnet''', the BIP9 '''starttime''' will be TBD (Epoch timestamp TBD) and BIP9 '''timeout''' will be TBD (Epoch timestamp TBD).
+
+==Motivation==
+
+[[bip-0009.mediawiki|BIP9]] standardised a process by which softforks can be more safely deployed by using miner enforcement to prevent a chain split.
+However, miners have seized this new power to take it upon themselves to even decide when or if softforks activate, preventing further progress in Bitcoin development despite widespread community acceptance of network upgrades.
+
+A few solutions have been proposed for a User-Activated SoftFork, including [[bip-0148.mediawiki|BIP148]] which enforces BIP9-signalling through an additional softfork, and [[bip-0008.mediawiki|BIP8]] which simply enforces the new rules when the timeout is reached rather than abandoning them.
+Both of these solutions are, however, less safe than a softfork with miner enforcement preventing a chain split.
+
+This BIP intends to preserve the increased safety of BIP9, while giving the community tools to economically pressure miners to deploy softforks of the community's choosing.
+
+==Rationale==
+
+Won't miners simply false-signal?
+
+* Yes, but even if this occurs, all full nodes will still activate the softfork and begin enforcing the rules. Miners who then produce invalid blocks will have their blocks rejected by the network, creating an even stronger incentive to adapt.
+
+==Backwards Compatibility==
+
+<code>OP_NOP6</code> ought to be forbidden by policy by all miners for future extensions such as this, so old miners will under no circumstances produce blocks which would now be considered invalid under the new rules.
+However, miners must still upgrade to avoid accepting and building on top of such a possible invalid block as part of an attack.
+
+Old nodes will likely also not relay transactions using this opcode for the same extensibility reasons, but this is not important since the rule cannot be verified deterministically outside the context of a block.
+
+==Reference Implementation==
+
+https://github.com/luke-jr/bitcoin/compare/cbah...luke-jr:checkblockversion
