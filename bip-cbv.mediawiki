@@ -46,6 +46,11 @@ For Bitcoin '''mainnet''', the BIP8 '''starttime''' will be TBD (Epoch timestamp
 
 For Bitcoin '''testnet''', the BIP8 '''starttime''' will be TBD (Epoch timestamp TBD) and BIP8 '''timeout''' will be TBD (Epoch timestamp TBD).
 
+==Best practices for wallets==
+
+Wallets SHOULD NOT use this feature except for softforks with widespread support from the economy.
+Doing so prematurely risks effectively bribing miners to cause a chain split with false signalling.
+
 ==Motivation==
 
 [[bip-0009.mediawiki|BIP9]] standardised a process by which softforks can be more safely deployed by using miner enforcement to prevent a chain split.
