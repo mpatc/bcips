@@ -44,7 +44,7 @@ This BIP will be deployed by "version bits with guaranteed lock-in" [[bip-0008.m
 
 For Bitcoin '''mainnet''', the BIP8 '''starttime''' will be TBD (Epoch timestamp TBD) and BIP8 '''timeout''' will be TBD (Epoch timestamp TBD).
 
-For Bitcoin '''mainnet''', the BIP8 '''starttime''' will be TBD (Epoch timestamp TBD) and BIP8 '''timeout''' will be TBD (Epoch timestamp TBD).
+For Bitcoin '''testnet''', the BIP8 '''starttime''' will be TBD (Epoch timestamp TBD) and BIP8 '''timeout''' will be TBD (Epoch timestamp TBD).
 
 ==Motivation==
 
