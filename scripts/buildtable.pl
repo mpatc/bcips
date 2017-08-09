@@ -2,10 +2,10 @@
 use strict;
 use warnings;
 
-my $topbip = 9999;
+my $topbcip = 9999;
 
 my %RequiredFields = (
-	BIP => undef,
+	BCIP => undef,
 	Title => undef,
 	Author => undef,
 	Status => undef,
@@ -48,9 +48,9 @@ my %ValidType = (
 
 my %emails;
 
-my $bipnum = 0;
-while (++$bipnum <= $topbip) {
-	my $fn = sprintf "bip-%04d.mediawiki", $bipnum;
+my $bcipnum = 0;
+while (++$bcipnum <= $topbcip) {
+	my $fn = sprintf "bcip-%04d.mediawiki", $bcipnum;
 	-e $fn || next;
 	open my $F, "<$fn";
 	while (<$F> !~ m[^(?:\xef\xbb\xbf)?<pre>$]) {
@@ -75,14 +75,14 @@ while (++$bipnum <= $topbip) {
 		}
 		++$found{$field};
 		die "Extra spaces in $fn" if $val =~ /^\s/;
-		if ($field eq 'BIP') {
-			die "$fn claims to be BIP $val" if $val ne $bipnum;
+		if ($field eq 'BCIP') {
+			die "$fn claims to be BCIP $val" if $val ne $bcipnum;
 		} elsif ($field eq 'Title') {
 			$title = $val;
 		} elsif ($field eq 'Author') {
 			$val =~ m/^(\S[^<@>]*\S) \<([^@>]*\@[\w.]+\.\w+)\>$/ or die "Malformed Author line in $fn";
 			my ($authorname, $authoremail) = ($1, $2);
-			$authoremail =~ s/(?<=\D)$bipnum(?=\D)/<BIPNUM>/g;
+			$authoremail =~ s/(?<=\D)$bcipnum(?=\D)/<BCIPNUM>/g;
 			$emails{$authorname}->{$authoremail} = undef;
 			if (defined $author) {
 				$author .= ", $authorname";
@@ -90,7 +90,7 @@ while (++$bipnum <= $topbip) {
 				$author = $authorname;
 			}
 		} elsif ($field eq 'Status') {
-			if ($bipnum == 38) {  # HACK
+			if ($bcipnum == 38) {  # HACK
 				$val =~ s/\s+\(.*\)$//;
 			}
 			die "Invalid status in $fn" unless exists $ValidStatus{$val};
@@ -102,7 +102,7 @@ while (++$bipnum <= $topbip) {
 			} else {
 				$type = $val;
 			}
-		} elsif ($field eq 'Layer') {  # BIP 123
+		} elsif ($field eq 'Layer') {  # BCIP 123
 			die "Invalid layer $val in $fn" unless exists $ValidLayer{$val};
 		} elsif (exists $DateField{$field}) {
 			die "Invalid date format in $fn" unless $val =~ /^20\d{2}\-(?:0\d|1[012])\-(?:[012]\d|30|31)$/;
@@ -120,7 +120,7 @@ while (++$bipnum <= $topbip) {
 		print " style=\"" . $ValidStatus{$status} . "\"";
 	}
 	print "\n";
-	print "| [[${fn}|${bipnum}]]\n";
+	print "| [[${fn}|${bcipnum}]]\n";
 	print "| ${title}\n";
 	print "| ${author}\n";
 	print "| ${type}\n";
