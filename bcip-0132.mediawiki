@@ -9,7 +9,7 @@
 
 == Abstract ==
 
-The current process for accepting a BCIP is not clearly defined. While [https://github.com/btc1/bcips/blob/master/bcip-0001.mediawiki BCIP-0001] defines the process for writing and submitting a Bitcoin Cash Improvement Proposal to the community it does not specify the precise method for which BCIPs are considered accepted or rejected.
+The current process for accepting a BCIP is not clearly defined. While [https://github.com/Bitcoin-ABC/bcips/blob/master/bcip-0001.mediawiki BCIP-0001] defines the process for writing and submitting a Bitcoin Cash Improvement Proposal to the community it does not specify the precise method for which BCIPs are considered accepted or rejected.
 
 This proposal sets up a method for determining BCIP acceptance.
 

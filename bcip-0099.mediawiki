@@ -339,13 +339,13 @@ worth of blocks).
 
 [1] https://en.wikipedia.org/wiki/Schism
 
-[2] https://github.com/btc1/bcips/blob/master/bcip-0050.mediawiki
+[2] https://github.com/Bitcoin-ABC/bcips/blob/master/bcip-0050.mediawiki
 
 [non_proportional_inflatacoin_fork] TODO missing link
 
 [spinoffs] https://bitcointalk.org/index.php?topic=563972.0
 
-[3] https://github.com/btc1/bcips/blob/master/bcip-0009.mediawiki
+[3] https://github.com/Bitcoin-ABC/bcips/blob/master/bcip-0009.mediawiki
 
 [4] https://github.com/bitcoin/bitcoin/compare/0.11...jtimon:hardfork-timewarp-0.11
 

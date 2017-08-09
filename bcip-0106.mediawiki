@@ -69,7 +69,7 @@ This is a hard-forking change to the Bitcoin protocol; anybody running code that
 
 [https://bitcointalk.org/index.php?topic=1078521.0 Elastic block cap with rollover penalties] - by Meni Rosenfeld
 
-[https://github.com/btc1/bcips/blob/master/bcip-0101.mediawiki Increase maximum block size] - by Gavin Andresen
+[https://github.com/Bitcoin-ABC/bcips/blob/master/bcip-0101.mediawiki Increase maximum block size] - by Gavin Andresen
 
 [https://gist.github.com/sipa/c65665fc360ca7a176a6 Block size following technological growth] - by Pieter Wuille
 

@@ -156,7 +156,7 @@ For each new BCIP that comes in an editor does the following:
 
 If the BCIP isn't ready, the editor will send it back to the author for revision, with specific instructions.
 
-Once the BCIP is ready for the repository it should be submitted as a "pull request" to the [https://github.com/btc1/bcips btc1/bcips] repository on GitHub where it may get further feedback.
+Once the BCIP is ready for the repository it should be submitted as a "pull request" to the [https://github.com/Bitcoin-ABC/bcips Bitcoin-ABC/bcips] repository on GitHub where it may get further feedback.
 
 The BCIP editor will:
 

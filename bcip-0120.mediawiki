@@ -145,8 +145,8 @@ The server needs to validate the PoP and reply with "valid" or "invalid". That p
 
 == References ==
 
-[https://github.com/btc1/bcips/blob/master/bcip-0021.mediawiki BIP0021]: URI Scheme
+[https://github.com/Bitcoin-ABC/bcips/blob/master/bcip-0021.mediawiki BIP0021]: URI Scheme
 
-[https://github.com/btc1/bcips/blob/master/bcip-0070.mediawiki BIP0070]: Payment Protocol
+[https://github.com/Bitcoin-ABC/bcips/blob/master/bcip-0070.mediawiki BIP0070]: Payment Protocol
 
-[https://github.com/btc1/bcips/blob/master/bcip-0121.mediawiki BIP0121]: Proof of Payment URI scheme
+[https://github.com/Bitcoin-ABC/bcips/blob/master/bcip-0121.mediawiki BIP0121]: Proof of Payment URI scheme
