@@ -364,7 +364,7 @@ Those proposing changes should consider that ultimately consent may rest with th
 |-
 | [[bip-0105.mediawiki|105]]
 | Consensus based block size retargeting algorithm
-| BtcDrak
+| BtcDrak, mpatc
 | Standard
 | Draft
 |-
