@@ -18,6 +18,7 @@ Those proposing changes should consider that ultimately consent may rest with th
 | Amir Taaki
 | Process
 | Active
+|-
 | [[bcip-0009.mediawiki|9]]
 | Version bits with timeout and delay
 | Pieter Wuille, Peter Todd, Greg Maxwell, Rusty Russell
