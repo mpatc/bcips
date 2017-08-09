@@ -31,41 +31,23 @@ Those proposing changes should consider that ultimately consent may rest with th
 | Informational
 | Draft
 |- style="background-color: #ffcfcf"
-| [[bip-0010.mediawiki|10]]
-| Multi-Sig Transaction Distribution
-| Alan Reiner
-| Informational
-| Withdrawn
-|- style="background-color: #cfffcf"
 | [[bip-0011.mediawiki|11]]
 | M-of-N Standard Transactions
 | Gavin Andresen
 | Standard
 | Final
-|- style="background-color: #ffcfcf"
-| [[bip-0012.mediawiki|12]]
-| OP_EVAL
-| Gavin Andresen
-| Standard
-| Withdrawn
 |- style="background-color: #cfffcf"
 | [[bip-0013.mediawiki|13]]
 | Address Format for pay-to-script-hash
 | Gavin Andresen
 | Standard
 | Final
-|- style="background-color: #cfffcf"
+|- style="background-color: #ffcfcf"
 | [[bip-0014.mediawiki|14]]
 | Protocol Version and User Agent
 | Amir Taaki, Patrick Strateman
 | Standard
 | Final
-|-
-| [[bip-0015.mediawiki|15]]
-| Aliases
-| Amir Taaki
-| Standard
-| Deferred
 |- style="background-color: #cfffcf"
 | [[bip-0016.mediawiki|16]]
 | Pay to Script Hash
@@ -73,30 +55,6 @@ Those proposing changes should consider that ultimately consent may rest with th
 | Standard
 | Final
 |- style="background-color: #ffcfcf"
-| [[bip-0017.mediawiki|17]]
-| OP_CHECKHASHVERIFY (CHV)
-| Luke Dashjr
-| Standard
-| Withdrawn
-|-
-| [[bip-0018.mediawiki|18]]
-| hashScriptCheck
-| Luke Dashjr
-| Standard
-| Draft
-|-
-| [[bip-0019.mediawiki|19]]
-| M-of-N Standard Transactions (Low SigOp)
-| Luke Dashjr
-| Standard
-| Draft
-|- style="background-color: #ffcfcf"
-| [[bip-0020.mediawiki|20]]
-| URI Scheme
-| Luke Dashjr
-| Standard
-| Replaced
-|- style="background-color: #cfffcf"
 | [[bip-0021.mediawiki|21]]
 | URI Scheme
 | Nils Schneider, Matt Corallo
@@ -133,12 +91,6 @@ Those proposing changes should consider that ultimately consent may rest with th
 | Informational
 | Final
 |-
-| [[bip-0033.mediawiki|33]]
-| Stratized Nodes
-| Amir Taaki
-| Standard
-| Draft
-|- style="background-color: #cfffcf"
 | [[bip-0034.mediawiki|34]]
 | Block v2, Height in Coinbase
 | Gavin Andresen
@@ -151,12 +103,6 @@ Those proposing changes should consider that ultimately consent may rest with th
 | Standard
 | Final
 |-
-| [[bip-0036.mediawiki|36]]
-| Custom Services
-| Stefan Thomas
-| Standard
-| Draft
-|- style="background-color: #cfffcf"
 | [[bip-0037.mediawiki|37]]
 | Connection Bloom filtering
 | Mike Hearn, Matt Corallo
@@ -172,30 +118,6 @@ Those proposing changes should consider that ultimately consent may rest with th
 | [[bip-0039.mediawiki|39]]
 | Mnemonic code for generating deterministic keys
 | Marek Palatinus, Pavol Rusnak, Aaron Voisine, Sean Bowe
-| Standard
-| Draft
-|-
-| 40
-| Stratum wire protocol
-| Marek Palatinus
-| Standard
-| BIP number allocated
-|-
-| 41
-| Stratum mining protocol
-| Marek Palatinus
-| Standard
-| BIP number allocated
-|-
-| [[bip-0042.mediawiki|42]]
-| A finite monetary supply for Bitcoin
-| Pieter Wuille
-| Standard
-| Draft
-|-
-| [[bip-0043.mediawiki|43]]
-| Purpose Field for Deterministic Wallets
-| Marek Palatinus, Pavol Rusnak
 | Standard
 | Draft
 |-
@@ -236,24 +158,6 @@ Those proposing changes should consider that ultimately consent may rest with th
 | Standard
 | Final
 |- style="background-color: #ffcfcf"
-| [[bip-0062.mediawiki|62]]
-| Dealing with malleability
-| Pieter Wuille
-| Standard
-| Withdrawn
-|-
-| 63
-| Stealth Addresses
-| Peter Todd
-| Standard
-| BIP number allocated
-|-
-| [[bip-0064.mediawiki|64]]
-| getutxo message
-| Mike Hearn
-| Standard
-| Draft
-|- style="background-color: #cfffcf"
 | [[bip-0065.mediawiki|65]]
 | OP_CHECKLOCKTIMEVERIFY
 | Peter Todd
@@ -269,12 +173,6 @@ Those proposing changes should consider that ultimately consent may rest with th
 | [[bip-0067.mediawiki|67]]
 | Deterministic Pay-to-script-hash multi-signature addresses through public key sorting
 | Thomas Kerin, Jean-Pierre Rupp, Ruben de Vries
-| Standard
-| Draft
-|-
-| [[bip-0068.mediawiki|68]]
-| Relative lock-time using consensus-enforced sequence numbers
-| Mark Friedenbach, BtcDrak, Nicolas Dorier, kinoshitajona
 | Standard
 | Draft
 |-
@@ -308,18 +206,6 @@ Those proposing changes should consider that ultimately consent may rest with th
 | Standard
 | Final
 |-
-| [[bip-0074.mediawiki|74]]
-| Allow zero value OP_RETURN in Payment Protocol
-| Toby Padilla
-| Standard
-| Draft
-|-
-| [[bip-0075.mediawiki|75]]
-| Out of Band Address Exchange using Payment Protocol Encryption
-| Justin Newton, Matt David, Aaron Voisine, James MacWhyte
-| Standard
-| Draft
-|-
 | [[bip-0080.mediawiki|80]]
 | Hierarchy for Non-Colored Voting Pool Deterministic Multisig Wallets
 | Justus Ranvier, Jimmy Song
@@ -344,24 +230,6 @@ Those proposing changes should consider that ultimately consent may rest with th
 | Informational
 | Draft
 |- style="background-color: #ffcfcf"
-| [[bip-0101.mediawiki|101]]
-| Increase maximum block size
-| Gavin Andresen
-| Standard
-| Withdrawn
-|-
-| [[bip-0102.mediawiki|102]]
-| Block size increase to 2MB
-| Jeff Garzik
-| Standard
-| Draft
-|-
-| [[bip-0103.mediawiki|103]]
-| Block size following technological growth
-| Pieter Wuille
-| Standard
-| Draft
-|-
 | [[bip-0105.mediawiki|105]]
 | Consensus based block size retargeting algorithm
 | BtcDrak, mpatc
@@ -377,12 +245,6 @@ Those proposing changes should consider that ultimately consent may rest with th
 | [[bip-0107.mediawiki|107]]
 | Dynamic limit on the block size
 | Washington Y. Sanchez
-| Standard
-| Draft
-|-
-| [[bip-0109.mediawiki|109]]
-| Two million byte size limit with sigop and sighash limits
-| Gavin Andresen
 | Standard
 | Draft
 |-
@@ -440,12 +302,6 @@ Those proposing changes should consider that ultimately consent may rest with th
 | Informational
 | Draft
 |-
-| [[bip-0125.mediawiki|125]]
-| Opt-in Full Replace-by-Fee Signaling
-| David A. Harding, Peter Todd
-| Standard
-| Draft
-|-
 | [[bip-0130.mediawiki|130]]
 | sendheaders message
 | Suhas Daftuar
@@ -476,33 +332,9 @@ Those proposing changes should consider that ultimately consent may rest with th
 | Standard
 | Draft
 |-
-| [[bip-0141.mediawiki|141]]
-| Segregated Witness (Consensus layer)
-| Eric Lombrozo, Johnson Lau, Pieter Wuille
-| Standard
-| Draft
-|-
-| [[bip-0142.mediawiki|142]]
-| Address Format for Segregated Witness
-| Johnson Lau
-| Standard
-| Deferred
-|-
 | [[bip-0143.mediawiki|143]]
 | Transaction Signature Verification for Version 0 Witness Program
 | Johnson Lau, Pieter Wuille
-| Standard
-| Draft
-|-
-| [[bip-0144.mediawiki|144]]
-| Segregated Witness (Peer Services)
-| Eric Lombrozo, Pieter Wuille
-| Standard
-| Draft
-|-
-| [[bip-0145.mediawiki|145]]
-| getblocktemplate Updates for Segregated Witness
-| Luke Dashjr
 | Standard
 | Draft
 |-
